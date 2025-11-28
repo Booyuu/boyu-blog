@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOYU | The Future of Algorithmic Art</title> <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@500&family=Space+Grotesk:wght@300;500&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #020202; color: #EAEAEA; font-family: 'Inter', sans-serif; }
+        /* 继承星空背景 (静态图兜底，防止文章页太重) */
+        #bg { position: fixed; inset: 0; z-index: -1; background: #050505; }
+        .stars { position: absolute; width: 1px; height: 1px; background: transparent; box-shadow: 10px 10px white, 20px 50px white, 100px 80px white; animation: animStar 50s linear infinite; } 
+        /* 简单模拟星空，避免每个页面都加载 Three.js */
+        
+        .article-container { max-width: 800px; margin: 0 auto; padding: 120px 20px; position: relative; z-index: 10; }
+        h1 { font-family: 'Cinzel', serif; color: #fff; font-size: 3rem; margin-bottom: 1rem; line-height: 1.2; }
+        .meta { font-family: 'Space Grotesk', monospace; color: #888; font-size: 0.9rem; margin-bottom: 3rem; border-bottom: 1px solid #333; padding-bottom: 2rem; }
+        
+        /* 正文样式 */
+        .prose p { margin-bottom: 1.5rem; line-height: 1.8; color: #ccc; font-size: 1.1rem; }
+        .prose h2 { font-family: 'Rajdhani', sans-serif; color: #fff; font-size: 1.8rem; margin-top: 3rem; margin-bottom: 1rem; }
+        .prose img { width: 100%; border-radius: 4px; border: 1px solid #333; margin: 2rem 0; }
+        
+        .back-btn { position: fixed; top: 30px; left: 30px; font-family: 'Space Grotesk'; color: #888; text-decoration: none; border: 1px solid #333; padding: 8px 16px; transition: 0.3s; z-index: 50; }
+        .back-btn:hover { border-color: #fff; color: #fff; background: rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body>
+    <div id="bg"></div>
+    <a href="index.html" class="back-btn">← BACK TO TERMINAL</a>
+
+    <article class="article-container">
+        <h1>The Future of Algorithmic Art</h1>
+        <div class="meta">
+            <span>DATE: 2025.11.28</span> <span class="mx-4">/</span> <span>CATEGORY: THOUGHTS</span>
+        </div>
+
+        <div class="prose">
+            <p>这里是文章的第一段。生成式艺术正在改变我们对创意的定义...</p>
+            
+            <h2>1. The Beginning</h2>
+            <p>这是第二段内容。你可以在这里分享你的观点。</p>
+            
+            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000" alt="Art">
+            
+            <p>这是结尾段落。</p>
+        </div>
+    </article>
+</body>
+</html>
