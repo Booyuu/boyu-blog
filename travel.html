@@ -1,69 +1,129 @@
 <!DOCTYPE html>
 <html lang="zh-CN" class="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BOYU | PLANETARY LOGS</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@500&family=Space+Grotesk:wght@300;500&family=Inter:wght@300;600&display=swap" rel="stylesheet">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@500&family=Space+Grotesk:wght@300;500&family=Inter:wght@300;600&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <style>
-        body { background-color: #020202; color: #EAEAEA; font-family: 'Inter', sans-serif; }
-        ::-webkit-scrollbar { width: 0; }
+        body {
+            background-color: #020202;
+            color: #EAEAEA;
+            font-family: 'Inter', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 0;
+        }
 
         /* === 1. 背景设定 (挪威极光) === */
         #bg-image {
-            position: fixed; inset: 0; z-index: -2;
+            position: fixed;
+            inset: 0;
+            z-index: -2;
             background-image: url('https://images.unsplash.com/photo-1473654729523-203e25dfda10?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
             background-size: cover;
             background-position: center;
         }
+
         /* 背景遮罩 (压暗背景，突出文字) */
         #bg-overlay {
-            position: fixed; inset: 0; z-index: -1;
-            background: rgba(0,0,0,0.5); /* 0.5 的透明度，既能看清图又能看清字 */
-            backdrop-filter: blur(2px);   /* 轻微模糊增加深邃感 */
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: rgba(0, 0, 0, 0.5);
+            /* 0.5 的透明度，既能看清图又能看清字 */
+            backdrop-filter: blur(2px);
+            /* 轻微模糊增加深邃感 */
         }
 
         /* === 2. 筛选按钮样式 === */
         .filter-btn {
-            border: 1px solid rgba(255,255,255,0.2); padding: 8px 20px; 
-            font-family: 'Space Grotesk'; font-size: 12px; letter-spacing: 0.1em; cursor: pointer;
-            transition: all 0.3s; text-transform: uppercase; background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            font-family: 'Space Grotesk';
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            background: rgba(0, 0, 0, 0.3);
         }
-        .filter-btn:hover, .filter-btn.active {
-            background: #fff; color: #000; border-color: #fff;
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
         }
 
         /* === 3. 卡片样式 (核心修复) === */
+        /* ✅ 修复版：强制不透明，强制黑色底板 */
         .travel-card {
-            position: relative; overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
-            transition: transform 0.5s ease, opacity 0.5s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+
+            /* 核心修复：设定背景色，并强制不透明 */
+            background-color: #000 !important;
+            opacity: 1 !important;
+            z-index: 10;
+            /* 确保在背景层之上 */
+
+            break-inside: avoid;
+            margin-bottom: 2rem;
+            transition: transform 0.5s ease, border-color 0.3s;
         }
-        
-        /* 图片样式：强制全彩，无滤镜 */
-        .travel-card img { 
-            width: 100%; height: 100%; object-fit: cover; 
-            filter: none !important; /* 核心修正：移除灰度 */
-            transition: transform 0.7s ease; 
+
+        /* ✅ 修复版：强制图片不透明，无滤镜 */
+        .travel-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: none !important;
+            /* 关掉滤镜 */
+            opacity: 1 !important;
+            /* 关掉透明度 */
+            transition: transform 0.7s ease;
         }
 
         /* 悬停效果：只放大，不变色 */
-        .travel-card:hover { transform: translateY(-5px); border-color: #fff; }
-        .travel-card:hover img { transform: scale(1.05); }
-        
+        .travel-card:hover {
+            transform: translateY(-5px);
+            border-color: #fff;
+        }
+
+        .travel-card:hover img {
+            transform: scale(1.05);
+        }
+
         /* 底部信息遮罩 */
         .card-info {
-            position: absolute; bottom: 0; left: 0; width: 100%; padding: 1.5rem;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-            opacity: 0; transition: opacity 0.3s;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
         }
-        .travel-card:hover .card-info { opacity: 1; }
+
+        .travel-card:hover .card-info {
+            opacity: 1;
+        }
     </style>
 </head>
+
 <body>
 
     <div id="bg-image"></div>
@@ -77,7 +137,7 @@
     </nav>
 
     <main class="max-w-[1400px] mx-auto px-6 pt-32 pb-20">
-        
+
         <div class="text-center mb-16 space-y-4">
             <h1 class="font-serif text-5xl md:text-7xl text-white drop-shadow-lg">WORLD ARCHIVE</h1>
             <p class="font-sans text-gray-300 max-w-xl mx-auto text-sm drop-shadow">
@@ -93,58 +153,72 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="gallery-grid">
-            
-            <div class="travel-card aspect-square" data-category="iceland" onclick="window.location.href='post-travel.html'">
+
+            <div class="travel-card aspect-square" data-category="iceland"
+                onclick="window.location.href='post-travel.html'">
                 <img src="https://images.unsplash.com/photo-1476610182048-b716b8518aae?q=80&w=800">
                 <div class="card-info">
                     <div class="text-xs font-mono text-red-400 mb-1">ICELAND</div>
                     <h3 class="font-serif text-xl text-white">HIGHLANDS</h3>
-                    <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-2"><i class="ri-article-line"></i> READ JOURNAL</p>
+                    <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-2"><i class="ri-article-line"></i>
+                        READ JOURNAL</p>
                 </div>
             </div>
 
-            <div class="travel-card aspect-square" data-category="singapore" onclick="window.location.href='post-travel.html'">
+            <div class="travel-card aspect-square" data-category="singapore"
+                onclick="window.location.href='post-travel.html'">
                 <img src="https://images.unsplash.com/photo-1525625293386-3f8f99389edd?q=80&w=800">
                 <div class="card-info">
                     <div class="text-xs font-mono text-blue-400 mb-1">SINGAPORE</div>
                     <h3 class="font-serif text-xl text-white">Marina Bay Sands</h3>
-                    <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-2"><i class="ri-article-line"></i> READ JOURNAL</p>
+                    <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-2"><i class="ri-article-line"></i>
+                        READ JOURNAL</p>
                 </div>
             </div>
 
-            <div class="travel-card aspect-square" data-category="china" onclick="window.location.href='post-travel.html'">
-                <img src="https://images.unsplash.com/photo-1627484986972-e544190b8abb?q=80&w=3268&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <div class="travel-card aspect-square" data-category="china"
+                onclick="window.location.href='post-travel.html'">
+                <img
+                    src="https://images.unsplash.com/photo-1627484986972-e544190b8abb?q=80&w=3268&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
                 <div class="card-info">
                     <div class="text-xs font-mono text-yellow-400 mb-1">CHINA</div>
                     <h3 class="font-serif text-xl text-white">SHANGHAI NIGHTS</h3>
-                    <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-2"><i class="ri-article-line"></i> READ JOURNAL</p>
+                    <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-2"><i class="ri-article-line"></i>
+                        READ JOURNAL</p>
                 </div>
             </div>
 
-            <div class="travel-card aspect-square" data-category="iceland" onclick="window.location.href='post-travel.html'">
-                <img src="https://images.unsplash.com/photo-1687726797639-19fa1ff57859?q=80&w=3271&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <div class="travel-card aspect-square" data-category="iceland"
+                onclick="window.location.href='post-travel.html'">
+                <img
+                    src="https://images.unsplash.com/photo-1687726797639-19fa1ff57859?q=80&w=3271&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
                 <div class="card-info">
                     <div class="text-xs font-mono text-red-400 mb-1">ICELAND</div>
                     <h3 class="font-serif text-xl text-white">BLACK BEACH</h3>
-                    <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-2"><i class="ri-article-line"></i> READ JOURNAL</p>
+                    <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-2"><i class="ri-article-line"></i>
+                        READ JOURNAL</p>
                 </div>
             </div>
 
-             <div class="travel-card aspect-square" data-category="china" onclick="window.location.href='post-travel.html'">
+            <div class="travel-card aspect-square" data-category="china"
+                onclick="window.location.href='post-travel.html'">
                 <img src="https://images.unsplash.com/photo-1508804055860-41903a954405?q=80&w=800">
                 <div class="card-info">
                     <div class="text-xs font-mono text-yellow-400 mb-1">CHINA</div>
                     <h3 class="font-serif text-xl text-white">GREAT WALL</h3>
-                    <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-2"><i class="ri-article-line"></i> READ JOURNAL</p>
+                    <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-2"><i class="ri-article-line"></i>
+                        READ JOURNAL</p>
                 </div>
             </div>
 
-            <div class="travel-card aspect-square" data-category="singapore" onclick="window.location.href='post-travel.html'">
+            <div class="travel-card aspect-square" data-category="singapore"
+                onclick="window.location.href='post-travel.html'">
                 <img src="https://images.unsplash.com/photo-1565265491739-335194002c6a?q=80&w=800">
                 <div class="card-info">
                     <div class="text-xs font-mono text-blue-400 mb-1">SINGAPORE</div>
                     <h3 class="font-serif text-xl text-white">MARINA BAY</h3>
-                    <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-2"><i class="ri-article-line"></i> READ JOURNAL</p>
+                    <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-2"><i class="ri-article-line"></i>
+                        READ JOURNAL</p>
                 </div>
             </div>
 
@@ -169,9 +243,11 @@
                     if (filterValue === 'all' || card.getAttribute('data-category') === filterValue) {
                         gsap.to(card, { display: 'block', opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" });
                     } else {
-                        gsap.to(card, { opacity: 0, scale: 0.8, duration: 0.3, ease: "power2.in", onComplete: () => {
-                            card.style.display = 'none';
-                        }});
+                        gsap.to(card, {
+                            opacity: 0, scale: 0.8, duration: 0.3, ease: "power2.in", onComplete: () => {
+                                card.style.display = 'none';
+                            }
+                        });
                     }
                 });
             });
@@ -183,4 +259,5 @@
     </script>
 
 </body>
+
 </html>
