@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOYU | ICELAND JOURNAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@500&family=Space+Grotesk:wght@300;500&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        body { background-color: #050505; color: #EAEAEA; font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 0; }
+        
+        /* 沉浸式首图 */
+        .hero-header {
+            height: 80vh; width: 100%; position: relative; overflow: hidden;
+        }
+        .hero-img {
+            width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6);
+            animation: zoomIn 20s infinite alternate;
+        }
+        @keyframes zoomIn { from { transform: scale(1); } to { transform: scale(1.1); } }
+        
+        .hero-title {
+            position: absolute; bottom: 10%; left: 5%; z-index: 10;
+        }
+        
+        /* 正文排版 */
+        .article-content p { margin-bottom: 1.5rem; line-height: 1.8; color: #ccc; font-size: 1.1rem; }
+        .article-content h2 { font-family: 'Cinzel', serif; color: #fff; font-size: 2rem; margin-top: 4rem; margin-bottom: 1.5rem; }
+        
+        /* 数据侧边栏 */
+        .meta-box { border-left: 1px solid rgba(255,255,255,0.2); padding-left: 2rem; }
+        .meta-item { margin-bottom: 2rem; }
+        .meta-label { font-family: 'Space Grotesk'; font-size: 10px; color: #666; letter-spacing: 0.1em; margin-bottom: 0.5rem; display: block; }
+        .meta-value { font-family: 'Rajdhani'; font-size: 1.2rem; color: #fff; }
+
+        /* 文中图片 */
+        .inline-img { width: 100%; border-radius: 2px; margin: 2rem 0; opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <nav class="fixed top-0 w-full p-8 z-50 flex justify-between items-center mix-blend-difference text-white">
+        <a href="travel.html" class="font-mono text-xs tracking-widest hover:text-gray-300 transition-colors">
+            <i class="ri-arrow-left-line"></i> BACK TO MAP
+        </a>
+        <div class="font-mono text-xs tracking-widest">LOG: ICELAND</div>
+    </nav>
+
+    <header class="hero-header">
+        <img src="https://images.unsplash.com/photo-1476610182048-b716b8518aae?q=80&w=2000" class="hero-img">
+        <div class="hero-title">
+            <div class="font-mono text-xs tracking-[0.5em] text-red-500 mb-4">EXPEDITION 01</div>
+            <h1 class="font-serif text-6xl md:text-8xl text-white leading-none">INTO THE<br>HIGHLANDS</h1>
+        </div>
+    </header>
+
+    <main class="max-w-[1400px] mx-auto px-6 py-32">
+        <div class="grid md:grid-cols-12 gap-16">
+            
+            <div class="md:col-span-8 article-content">
+                <p class="first-letter:text-5xl first-letter:font-serif first-letter:float-left first-letter:mr-4 first-letter:text-white">
+                    冰岛的荒原有一种寂静的压迫感。当你驾驶着越野车穿越高地，周围是黑色的火山灰和苔藓，你会感觉自己降落在了另一个星球。
+                </p>
+                <p>
+                    这次旅程的目的是寻找那架著名的 DC-3 飞机残骸，并在极光爆发的夜晚拍下一张完美的照片。
+                </p>
+
+                <img src="https://images.unsplash.com/photo-1520769669658-f07657f5a307?q=80&w=1200" class="inline-img">
+                <p class="text-xs text-gray-500 text-center italic mb-12">▲ 飞机残骸，摄于黑沙滩</p>
+
+                <h2>THE SILENCE</h2>
+                <p>
+                    在这里，时间仿佛是静止的。没有信号，没有噪音，只有风声。这让我想起了交易时的那种“心流”状态——当市场的所有噪音都被过滤，只剩下K线的律动。
+                </p>
+                <p>
+                    我们在维克小镇停留了一晚，等待极光指数（KP）达到 5 的时刻。
+                </p>
+                
+                <div class="grid grid-cols-2 gap-4 my-8">
+                    <img src="https://images.unsplash.com/photo-1531366936337-7c912a4589a7?q=80&w=800" class="w-full h-64 object-cover">
+                    <img src="https://images.unsplash.com/photo-1504893524553-bfa5438b9093?q=80&w=800" class="w-full h-64 object-cover">
+                </div>
+            </div>
+
+            <div class="md:col-span-4 hidden md:block">
+                <div class="sticky top-32 meta-box">
+                    <div class="meta-item">
+                        <span class="meta-label">LOCATION</span>
+                        <div class="meta-value">Vík, Iceland</div>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">DATE</span>
+                        <div class="meta-value">Sep 2025</div>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">GEAR</span>
+                        <div class="meta-value">Sony A7R IV</div>
+                        <div class="text-sm text-gray-500">16-35mm GM</div>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">MOOD</span>
+                        <div class="meta-value">Isolation</div>
+                    </div>
+                    
+                    <div class="mt-12 pt-12 border-t border-white/10 flex gap-4 text-xl text-gray-500">
+                        <i class="ri-twitter-x-line hover:text-white cursor-pointer"></i>
+                        <i class="ri-links-line hover:text-white cursor-pointer"></i>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="border-t border-white/10 mt-32 pt-16">
+            <h3 class="font-mono text-xs tracking-widest text-gray-500 mb-8">NEXT DESTINATION</h3>
+            <div class="grid grid-cols-2 gap-8">
+                <div class="aspect-video bg-gray-900 relative group cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1525625293386-3f8f99389edd?q=80&w=800" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all">
+                    <div class="absolute bottom-4 left-4 font-serif text-xl text-white">SINGAPORE</div>
+                </div>
+                <div class="aspect-video bg-gray-900 relative group cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1508804185872-d7badad00f7d?q=80&w=800" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all">
+                    <div class="absolute bottom-4 left-4 font-serif text-xl text-white">SHANGHAI</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>
