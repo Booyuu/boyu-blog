@@ -8,41 +8,40 @@ document.addEventListener("DOMContentLoaded", () => {
     const isSubPage = subFolders.some(folder => path.includes(folder));
     const pathPrefix = isSubPage ? '../' : '';
 
-    // === ⚡️ 自动注入播放器 HTML (插座模式 - 修复版) ===
+    // === ⚡️ 自动注入播放器 HTML (插座模式 - 纯净版) ===
     function injectAudioPlayer() {
         const slot = document.getElementById('audio-slot');
-        if (!slot) return;
+        if (!slot) return; 
 
+        // 🔴 之前的代码里这里多写了一个 div class="h-4..." 分割线，现在删掉了
+        // ✅ 现在只注入播放器本身，不带分割线，不带额外的 flex 容器
         slot.innerHTML = `
-            <div class="flex items-center gap-6">
-                
-                <div class="relative group font-mono" id="audio-console">
-                    <div class="relative">
-                        <button id="music-trigger" class="flex items-center gap-3 opacity-80 hover:opacity-100 transition-opacity cursor-pointer" onclick="window.toggleMainPlayback()">
-                            <div class="flex items-end gap-[2px] h-3" id="master-wave">
-                                <div class="wave-bar w-[2px] h-1 bg-white"></div>
-                                <div class="wave-bar w-[2px] h-2 bg-white"></div>
-                                <div class="wave-bar w-[2px] h-1.5 bg-white"></div>
-                                <div class="wave-bar w-[2px] h-3 bg-white"></div>
-                            </div>
-                            <div class="flex flex-col leading-none text-left">
-                                <span class="text-[10px] tracking-widest text-white truncate max-w-[120px]" id="current-track-name">AUDIO OFF</span>
-                                <span id="time-display" class="text-[8px] text-dim mt-1 hidden">0:00 / 0:00</span>
-                            </div>
-                        </button>
-                        <div id="progress-container" class="absolute bottom-[-5px] left-0 w-full h-[2px] bg-white/20 cursor-pointer hidden hover:h-[4px] transition-all z-50">
-                            <div id="progress-bar" class="h-full bg-accent-blue w-0 relative">
-                                <div class="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_10px_#00f3ff] opacity-0 group-hover:opacity-100"></div>
-                            </div>
+            <div class="relative group font-mono" id="audio-console">
+                <div class="relative">
+                    <button id="music-trigger" class="flex items-center gap-3 opacity-80 hover:opacity-100 transition-opacity cursor-pointer" onclick="window.toggleMainPlayback()">
+                        <div class="flex items-end gap-[2px] h-3" id="master-wave">
+                            <div class="wave-bar w-[2px] h-1 bg-white"></div>
+                            <div class="wave-bar w-[2px] h-2 bg-white"></div>
+                            <div class="wave-bar w-[2px] h-1.5 bg-white"></div>
+                            <div class="wave-bar w-[2px] h-3 bg-white"></div>
+                        </div>
+                        <div class="flex flex-col leading-none text-left">
+                            <span class="text-[10px] tracking-widest text-white truncate max-w-[120px]" id="current-track-name">AUDIO OFF</span>
+                            <span id="time-display" class="text-[8px] text-dim mt-1 hidden">0:00 / 0:00</span>
+                        </div>
+                    </button>
+                    <div id="progress-container" class="absolute bottom-[-5px] left-0 w-full h-[2px] bg-white/20 cursor-pointer hidden hover:h-[4px] transition-all z-50">
+                        <div id="progress-bar" class="h-full bg-accent-blue w-0 relative">
+                            <div class="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_10px_#00f3ff] opacity-0 group-hover:opacity-100"></div>
                         </div>
                     </div>
-                    
-                    <div class="absolute top-full left-0 w-64 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2 pointer-events-none group-hover:pointer-events-auto">
-                        <div class="bg-black/95 backdrop-blur-xl border border-white/20 p-2 flex flex-col gap-1 shadow-2xl">
-                            <div class="absolute top-0 left-0 w-2 h-2 border-t border-l border-accent-blue"></div>
-                            <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-accent-blue"></div>
-                            <div id="playlist-container"></div>
-                        </div>
+                </div>
+                
+                <div class="absolute top-full left-0 w-64 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2 pointer-events-none group-hover:pointer-events-auto">
+                    <div class="bg-black/95 backdrop-blur-xl border border-white/20 p-2 flex flex-col gap-1 shadow-2xl">
+                        <div class="absolute top-0 left-0 w-2 h-2 border-t border-l border-accent-blue"></div>
+                        <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-accent-blue"></div>
+                        <div id="playlist-container"></div>
                     </div>
                 </div>
             </div>
