@@ -49,11 +49,11 @@ const translations = {
         "proj.ethicraft.desc": "永久免费的 Web3 学习与考试认证平台。", "proj.pa.desc": "裸K交易系统与心态磨砺笔记。", "proj.iceland.desc": "关于孤独、荒原与极光的影像记录。",
 
         // 博客预览
-        "blog.readall": "查看全部 ->", "optics.enter": "进入画廊",
+        "blog.readall": "查看全部 ->", "optics.enter": "摄影集",
         
         // 底部 Nexus
-        "nexus.title": "注册神经网络链接", "nexus.desc": "注册成为 [BOYU] 节点的观察者。第一时间接收最新的交易策略与星际影像。",
-        "btn.activate": "激活账号", "nexus.fuel": "为飞船注能", "btn.sponsor": "赞助我",
+        "nexus.title": "注册神经网络链接", "nexus.desc": "注册成为 [BOYU] 节点的观察者。第一时间接收最新的内容。",
+        "btn.activate": "激活账号", "nexus.fuel": "为飞船注能", "btn.sponsor": "赞助一杯咖啡",
 
         // --- [子页面 Travel/Media/Post] ---
         "world.title": "世界档案", "world.desc": "用镜头丈量世界的维度。从热带的钢铁森林，到极地的冰原荒野。",
