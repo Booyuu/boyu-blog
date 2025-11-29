@@ -845,30 +845,36 @@
         const preloader = document.getElementById('preloader');
         const progressBar = document.querySelector('.loader-progress');
         const percentText = document.getElementById('loading-percent');
-        
+
         // 5秒强制解锁
-        setTimeout(() => { 
-            if(preloader && preloader.style.display !== 'none') {
-                gsap.to(preloader, {opacity:0, onComplete:()=>preloader.style.display='none'});
+        setTimeout(() => {
+            if (preloader && preloader.style.display !== 'none') {
+                gsap.to(preloader, { opacity: 0, onComplete: () => preloader.style.display = 'none' });
             }
         }, 5000);
 
         let progress = 0;
         const interval = setInterval(() => {
-            progress += Math.random() * 15; 
+            progress += Math.random() * 15;
             if (progress > 100) progress = 100;
-            if(progressBar) progressBar.style.width = `${progress}%`;
-            if(percentText) percentText.innerText = Math.floor(progress);
-            
+
+            if (progressBar) progressBar.style.width = `${progress}%`;
+            if (percentText) percentText.innerText = Math.floor(progress);
+
             if (progress === 100) {
                 clearInterval(interval);
-                gsap.to(preloader, { 
-                    opacity: 0, 
-                    duration: 1, 
-                    ease: "power2.inOut", 
+                // 1. 加载页淡出
+                gsap.to(preloader, {
+                    opacity: 0,
+                    duration: 1,
+                    ease: "power2.inOut",
                     onComplete: () => {
                         preloader.style.display = 'none';
-                        gsap.from(".mega-title", { y: 0, opacity: 1, duration: 1.5, ease: "power3.out" }); // 修正为直接显示
+
+                        // 2. ✅ 核心修复：强制让标题显示 (用 .to 方法)
+                        // 将透明度设为 1，位置归位 (y:0)
+                        gsap.to(".mega-title", { y: 0, opacity: 1, duration: 1.5, ease: "power3.out" });
+                        gsap.to(".mega-subtitle", { y: 0, opacity: 1, duration: 1.5, delay: 0.2, ease: "power3.out" });
                     }
                 });
             }
@@ -890,7 +896,7 @@
 
         // === C. 星际音频系统 V5.0 (修复版) ===
         const playlist = [
-            { title: "Saman", artist: "Ólafur Arnalds", src: "assets/saman.mp3" },
+            { title: "Saman", artist: "Ólafur Arnalds", src: "assets/Saman.mp3" },
             { title: "Oceans", artist: "Ólafur Arnalds", src: "assets/Oceans.mp3" },
             { title: "Loom", artist: "Ólafur Arnalds", src: "assets/Loom.mp3" },
             { title: "My Only Girl", artist: "方大同", src: "assets/MyOnlyGirl.mp3" }
@@ -903,13 +909,13 @@
         const progressContainer = document.getElementById('progress-container');
         const progBar = document.getElementById('progress-bar');
         const playlistContainer = document.getElementById('playlist-container');
-        
+
         let currentTrackIndex = 0;
         let isDragging = false;
 
         // 渲染歌单
         function renderPlaylist() {
-            if(!playlistContainer) return;
+            if (!playlistContainer) return;
             playlistContainer.innerHTML = '';
             playlist.forEach((track, index) => {
                 const div = document.createElement('div');
@@ -931,7 +937,7 @@
         }
 
         // 播放控制
-        window.toggleMainPlayback = function() {
+        window.toggleMainPlayback = function () {
             if (audio.paused) {
                 if (!audio.src) audio.src = playlist[currentTrackIndex].src;
                 audio.play().then(() => updateUIState(true)).catch(console.error);
@@ -941,7 +947,7 @@
             }
         };
 
-        window.playTrack = function(index) {
+        window.playTrack = function (index) {
             if (currentTrackIndex === index && !audio.paused) {
                 audio.pause(); updateUIState(false);
             } else {
@@ -954,7 +960,7 @@
 
         function updateUIState(isPlaying) {
             const track = playlist[currentTrackIndex];
-            
+
             if (isPlaying) {
                 trackNameDisplay.innerHTML = `<span class="text-accent-blue">PLAYING:</span> ${track.title.toUpperCase()}`;
                 masterWave.classList.add('playing');
@@ -963,8 +969,8 @@
                     <div class="wave-bar w-[2px] h-2 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.1s]"></div>
                     <div class="wave-bar w-[2px] h-1.5 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.2s]"></div>
                     <div class="wave-bar w-[2px] h-3 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.3s]"></div>`;
-                if(timeDisplay) timeDisplay.classList.remove('hidden');
-                if(progressContainer) progressContainer.classList.remove('hidden');
+                if (timeDisplay) timeDisplay.classList.remove('hidden');
+                if (progressContainer) progressContainer.classList.remove('hidden');
             } else {
                 trackNameDisplay.innerHTML = track.title.toUpperCase();
                 masterWave.classList.remove('playing');
@@ -980,7 +986,7 @@
                 const title = item.querySelector('.track-title');
                 const iconBox = item.querySelector('.icon-box');
                 const icon = item.querySelector('.track-icon');
-                
+
                 if (index === currentTrackIndex) {
                     title.classList.add('text-accent-blue');
                     iconBox.classList.remove('opacity-0');
@@ -996,17 +1002,17 @@
         }
 
         // 进度条
-        function formatTime(s) { return isNaN(s) ? "0:00" : Math.floor(s/60) + ":" + (Math.floor(s%60)<10?'0':'') + Math.floor(s%60); }
-        
+        function formatTime(s) { return isNaN(s) ? "0:00" : Math.floor(s / 60) + ":" + (Math.floor(s % 60) < 10 ? '0' : '') + Math.floor(s % 60); }
+
         audio.addEventListener('timeupdate', () => {
             if (!isDragging && progBar) {
                 const percent = (audio.currentTime / audio.duration) * 100;
                 progBar.style.width = `${percent}%`;
-                if(timeDisplay) timeDisplay.innerText = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+                if (timeDisplay) timeDisplay.innerText = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
             }
         });
 
-        if(progressContainer) {
+        if (progressContainer) {
             function seek(e) {
                 const rect = progressContainer.getBoundingClientRect();
                 const percent = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
@@ -1022,12 +1028,12 @@
             let next = (currentTrackIndex + 1) % playlist.length;
             playTrack(next);
         });
-        
+
         renderPlaylist();
 
         // === D. Three.js 粒子星海 (这里加回来了！) ===
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x000000, 0.001); 
+        scene.fog = new THREE.FogExp2(0x000000, 0.001);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
         camera.position.z = 100;
 
@@ -1035,15 +1041,15 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         // 确保容器存在
         const canvasContainer = document.getElementById('canvas-container');
-        if(canvasContainer) canvasContainer.appendChild(renderer.domElement);
+        if (canvasContainer) canvasContainer.appendChild(renderer.domElement);
 
         const geometry = new THREE.BufferGeometry();
         const count = 6000;
         const positions = new Float32Array(count * 3);
-        for(let i=0; i<count*3; i+=3) {
+        for (let i = 0; i < count * 3; i += 3) {
             positions[i] = (Math.random() - 0.5) * 1500;
-            positions[i+1] = (Math.random() - 0.5) * 1500;
-            positions[i+2] = (Math.random() - 0.5) * 2000;
+            positions[i + 1] = (Math.random() - 0.5) * 1500;
+            positions[i + 2] = (Math.random() - 0.5) * 2000;
         }
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         const material = new THREE.PointsMaterial({ size: 1.2, color: 0xffffff, transparent: true, opacity: 0.8, sizeAttenuation: true });
@@ -1052,8 +1058,8 @@
 
         let mouseX = 0, mouseY = 0;
         window.addEventListener('mousemove', e => {
-            mouseX = (e.clientX - window.innerWidth/2) * 0.05;
-            mouseY = (e.clientY - window.innerHeight/2) * 0.05;
+            mouseX = (e.clientX - window.innerWidth / 2) * 0.05;
+            mouseY = (e.clientY - window.innerHeight / 2) * 0.05;
         });
 
         function animate() {
@@ -1061,18 +1067,18 @@
             starField.rotation.x += 0.0001;
             camera.position.x += (mouseX - camera.position.x) * 0.05;
             camera.position.y += (-mouseY - camera.position.y) * 0.05;
-            
+
             const scrollY = window.scrollY;
-            camera.position.z = 100 - (scrollY * 0.1); 
+            camera.position.z = 100 - (scrollY * 0.1);
 
             camera.lookAt(scene.position);
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         }
         animate();
-        
+
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth/window.innerHeight;
+            camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
