@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="zh-CN" class="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BOYU | CHRONOLOGY</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23050505%22 stroke=%22white%22 stroke-width=%222%22/><circle cx=%2250%22 cy=%2250%22 r=%2215%22 fill=%22%2300f3ff%22 filter=%22blur(2px)%22/></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Space+Grotesk:wght@300;500&family=Inter:wght@300;600&display=swap" rel="stylesheet">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23050505%22 stroke=%22white%22 stroke-width=%222%22/><circle cx=%2250%22 cy=%2250%22 r=%2215%22 fill=%22%2300f3ff%22 filter=%22blur(2px)%22/></svg>">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Space+Grotesk:wght@300;500&family=Inter:wght@300;600&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -23,23 +27,105 @@
         }
     </script>
     <style>
-        body { background-color: #020202; color: #EAEAEA; }
-        ::-webkit-scrollbar { width: 0; }
-        #noise-layer { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.05; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); }
+        body {
+            background-color: #020202;
+            color: #EAEAEA;
+        }
+
+        ::-webkit-scrollbar {
+            width: 0;
+        }
+
+        #noise-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+        }
+
         /* 时间轴样式 */
-        .timeline-line { position: absolute; left: 0; top: 2rem; bottom: 0; width: 1px; background: linear-gradient(to bottom, #00f3ff, transparent); z-index: 0; }
-        .timeline-dot { position: absolute; left: -4px; top: 1.5rem; width: 9px; height: 9px; background: #050505; border: 1px solid #00f3ff; border-radius: 50%; z-index: 1; box-shadow: 0 0 10px #00f3ff; }
+        .timeline-line {
+            position: absolute;
+            left: 0;
+            top: 2rem;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(to bottom, #00f3ff, transparent);
+            z-index: 0;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -4px;
+            top: 1.5rem;
+            width: 9px;
+            height: 9px;
+            background: #050505;
+            border: 1px solid #00f3ff;
+            border-radius: 50%;
+            z-index: 1;
+            box-shadow: 0 0 10px #00f3ff;
+        }
     </style>
 </head>
+
 <body>
     <div id="noise-layer"></div>
 
     <nav class="fixed top-0 w-full p-8 z-50 flex justify-between items-center mix-blend-difference">
-        <a href="index.html" class="font-mono text-xs tracking-widest hover:text-accent-blue text-gray-400 transition-colors">
-            <i class="ri-arrow-left-line"></i> RETURN TO BASE
-        </a>
+        <div class="pointer-events-auto flex items-center gap-6">
+
+            <a href="../index.html"
+                class="group flex items-center gap-2 font-mono text-xs tracking-widest text-gray-400 hover:text-white transition-colors">
+                <i class="ri-arrow-left-line group-hover:-translate-x-1 transition-transform"></i>
+                <span data-i18n="nav.back">RETURN</span>
+            </a>
+
+            <div class="h-4 w-[1px] bg-white/20"></div>
+
+            <div class="relative group font-mono" id="audio-console">
+                <div class="relative">
+                    <button id="music-trigger"
+                        class="flex items-center gap-3 opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
+                        onclick="toggleMainPlayback()">
+                        <div class="flex items-end gap-[2px] h-3" id="master-wave">
+                            <div class="wave-bar w-[2px] h-1 bg-white"></div>
+                            <div class="wave-bar w-[2px] h-2 bg-white"></div>
+                            <div class="wave-bar w-[2px] h-1.5 bg-white"></div>
+                            <div class="wave-bar w-[2px] h-3 bg-white"></div>
+                        </div>
+                        <div class="flex flex-col leading-none text-left">
+                            <span class="text-[10px] tracking-widest text-white truncate max-w-[120px]"
+                                id="current-track-name">AUDIO OFF</span>
+                            <span id="time-display" class="text-[8px] text-dim mt-1 hidden">0:00 / 0:00</span>
+                        </div>
+                    </button>
+                    <div id="progress-container"
+                        class="absolute bottom-[-5px] left-0 w-full h-[2px] bg-white/20 cursor-pointer hidden hover:h-[4px] transition-all z-50">
+                        <div id="progress-bar" class="h-full bg-accent-blue w-0 relative">
+                            <div
+                                class="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_10px_#00f3ff] opacity-0 group-hover:opacity-100">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="absolute top-full left-0 w-64 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2 pointer-events-none group-hover:pointer-events-auto">
+                    <div class="bg-black/95 backdrop-blur-xl border border-white/20 p-2 flex flex-col gap-1 shadow-2xl">
+                        <div class="absolute top-0 left-0 w-2 h-2 border-t border-l border-accent-blue"></div>
+                        <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-accent-blue"></div>
+                        <div id="playlist-container"></div>
+                    </div>
+                </div>
+            </div>
+
+            <audio id="global-audio"></audio>
+        </div>
         <div class="font-serif text-xl tracking-widest text-white hidden md:block">CHRONOLOGY // LOGS</div>
-        <div class="w-10"></div> 
+        <div class="w-10"></div>
     </nav>
 
     <main class="max-w-4xl mx-auto px-8 pt-40 pb-20">
@@ -53,26 +139,37 @@
         </div>
 
         <section class="relative pl-8 md:pl-16 border-l border-white/10">
-            
-            <div class="font-mono text-4xl text-white/20 absolute -left-[5rem] md:-left-[7rem] top-0 rotate-90 origin-top-left">2025</div>
+
+            <div
+                class="font-mono text-4xl text-white/20 absolute -left-[5rem] md:-left-[7rem] top-0 rotate-90 origin-top-left">
+                2025</div>
 
             <div class="space-y-24">
                 <article class="relative group cursor-pointer" onclick="window.location.href='post-01.html'">
                     <div class="timeline-dot group-hover:bg-accent-blue transition-colors"></div>
                     <div class="font-mono text-xs text-accent-blue mb-3 tracking-widest">NOVEMBER 28 // SECTOR 03</div>
-                    <h2 class="font-serif text-3xl md:text-4xl text-white mb-4 group-hover:text-accent-blue transition-colors">The Future of Algorithmic Art</h2>
-                    <p class="font-sans text-dim leading-relaxed line-clamp-3 pr-8">探索生成式艺术在现代网页设计中的应用与效果。代码如何成为新的画笔，创造出不可预知的数字景观。</p>
-                    <div class="mt-6 flex items-center gap-2 text-xs font-mono text-accent-blue opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
+                    <h2
+                        class="font-serif text-3xl md:text-4xl text-white mb-4 group-hover:text-accent-blue transition-colors">
+                        The Future of Algorithmic Art</h2>
+                    <p class="font-sans text-dim leading-relaxed line-clamp-3 pr-8">
+                        探索生成式艺术在现代网页设计中的应用与效果。代码如何成为新的画笔，创造出不可预知的数字景观。</p>
+                    <div
+                        class="mt-6 flex items-center gap-2 text-xs font-mono text-accent-blue opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
                         READ LOG <i class="ri-arrow-right-line"></i>
                     </div>
                 </article>
 
                 <article class="relative group cursor-pointer">
-                    <div class="timeline-dot group-hover:bg-accent-red transition-colors" style="border-color: #ff2a2a; box-shadow: 0 0 10px #ff2a2a;"></div>
+                    <div class="timeline-dot group-hover:bg-accent-red transition-colors"
+                        style="border-color: #ff2a2a; box-shadow: 0 0 10px #ff2a2a;"></div>
                     <div class="font-mono text-xs text-accent-red mb-3 tracking-widest">OCTOBER 15 // SECTOR 02</div>
-                    <h2 class="font-serif text-3xl md:text-4xl text-white mb-4 group-hover:text-accent-red transition-colors">Finding Alpha in Bear Markets</h2>
-                    <p class="font-sans text-dim leading-relaxed line-clamp-3 pr-8">在下行周期中寻找确定性机会的交易笔记。如何在市场情绪低迷时保持冷静并执行策略。</p>
-                    <div class="mt-6 flex items-center gap-2 text-xs font-mono text-accent-red opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
+                    <h2
+                        class="font-serif text-3xl md:text-4xl text-white mb-4 group-hover:text-accent-red transition-colors">
+                        Finding Alpha in Bear Markets</h2>
+                    <p class="font-sans text-dim leading-relaxed line-clamp-3 pr-8">
+                        在下行周期中寻找确定性机会的交易笔记。如何在市场情绪低迷时保持冷静并执行策略。</p>
+                    <div
+                        class="mt-6 flex items-center gap-2 text-xs font-mono text-accent-red opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
                         ACCESS DENIED <i class="ri-lock-line"></i>
                     </div>
                 </article>
@@ -91,4 +188,5 @@
         gsap.from(".timeline-dot", { scale: 0, duration: 0.5, stagger: 0.3, delay: 0.7, ease: "back.out(1.7)" });
     </script>
 </body>
+
 </html>
