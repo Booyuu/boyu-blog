@@ -454,31 +454,42 @@
 
             <div class="relative group z-50 font-mono" id="audio-console">
 
-                <button
-                    class="flex items-center gap-3 py-3 opacity-80 hover:opacity-100 transition-opacity cursor-pointer">
-                    <div class="flex items-end gap-[2px] h-3" id="master-wave">
-                        <div class="wave-bar w-[2px] h-1 bg-white"></div>
-                        <div class="wave-bar w-[2px] h-2 bg-white"></div>
-                        <div class="wave-bar w-[2px] h-1.5 bg-white"></div>
-                        <div class="wave-bar w-[2px] h-3 bg-white"></div>
+                <div class="relative">
+                    <button id="music-trigger"
+                        class="flex items-center gap-3 py-3 opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
+                        onclick="toggleMainPlayback()">
+                        <div class="flex items-end gap-[2px] h-3" id="master-wave">
+                            <div class="wave-bar w-[2px] h-1 bg-white"></div>
+                            <div class="wave-bar w-[2px] h-2 bg-white"></div>
+                            <div class="wave-bar w-[2px] h-1.5 bg-white"></div>
+                            <div class="wave-bar w-[2px] h-3 bg-white"></div>
+                        </div>
+
+                        <div class="flex flex-col leading-none text-left">
+                            <span class="text-[10px] tracking-widest text-white truncate max-w-[150px]"
+                                id="current-track-name">AUDIO OFF</span>
+                            <span id="time-display" class="text-[8px] text-dim mt-1 hidden">0:00 / 0:00</span>
+                        </div>
+                    </button>
+
+                    <div id="progress-container"
+                        class="absolute bottom-0 left-0 w-full h-[2px] bg-white/20 cursor-pointer hidden hover:h-[4px] transition-all z-50">
+                        <div id="progress-bar" class="h-full bg-accent-blue w-0 relative">
+                            <div
+                                class="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_10px_#00f3ff] opacity-0 group-hover:opacity-100">
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex flex-col leading-none text-left">
-                        <span class="text-[10px] tracking-widest text-white truncate max-w-[120px]"
-                            id="current-track-name">AUDIO OFF</span>
-                        <span id="time-display" class="text-[8px] text-dim mt-0.5 hidden">0:00 / 0:00</span>
-                    </div>
-                </button>
+                </div>
 
                 <div
-                    class="absolute top-full left-0 w-80 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2 pointer-events-none group-hover:pointer-events-auto">
-                    <div class="bg-black/95 backdrop-blur-xl border border-white/20 flex flex-col shadow-2xl">
-
+                    class="absolute top-full left-0 w-64 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2 pointer-events-none group-hover:pointer-events-auto">
+                    <div class="bg-black/95 backdrop-blur-xl border border-white/20 p-2 flex flex-col gap-1 shadow-2xl">
                         <div class="absolute top-0 left-0 w-2 h-2 border-t border-l border-accent-blue"></div>
                         <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-accent-blue"></div>
 
                         <div id="playlist-container">
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -869,9 +880,9 @@
             el.addEventListener('mouseleave', () => gsap.to(ring, { scale: 1, borderColor: 'rgba(255,255,255,0.3)', backgroundColor: 'transparent' }));
         });
 
-        // === C. 星际音频系统 V4.0 (完整版) ===
+        // === C. 星际音频系统 V5.0 (Final Fix) ===
         const playlist = [
-            { title: "Saman", artist: "Ólafur Arnalds", src: "assets/Saman.mp3" },
+            { title: "Saman", artist: "Ólafur Arnalds", src: "assets/saman.mp3" },
             { title: "Oceans", artist: "Ólafur Arnalds", src: "assets/Oceans.mp3" },
             { title: "Loom", artist: "Ólafur Arnalds", src: "assets/Loom.mp3" },
             { title: "My Only Girl", artist: "方大同", src: "assets/MyOnlyGirl.mp3" }
@@ -881,25 +892,21 @@
         const masterWave = document.getElementById('master-wave');
         const trackNameDisplay = document.getElementById('current-track-name');
         const timeDisplay = document.getElementById('time-display');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
         const playlistContainer = document.getElementById('playlist-container');
 
-        let currentTrackIndex = -1;
+        let currentTrackIndex = 0; // 默认选中第一首
         let isDragging = false;
 
-        // 格式化时间
-        function formatTime(s) {
-            if (isNaN(s)) return "0:00";
-            return Math.floor(s / 60) + ":" + (Math.floor(s % 60) < 10 ? '0' : '') + Math.floor(s % 60);
-        }
-
-        // 1. 渲染歌单 (如果 HTML 里没写，这里会自动生成，如果 HTML 写了，这里会覆盖)
-        if (playlistContainer) {
+        // 1. 初始化渲染歌单
+        function renderPlaylist() {
             playlistContainer.innerHTML = '';
             playlist.forEach((track, index) => {
                 const div = document.createElement('div');
                 div.className = `track-item relative group/item border-b border-white/5 transition-colors hover:bg-white/5`;
                 div.innerHTML = `
-                    <div class="flex items-center gap-4 p-4 cursor-pointer" onclick="playTrack(${index})">
+                    <div class="flex items-center gap-4 p-3 cursor-pointer" onclick="playTrack(${index})">
                         <div class="text-dim text-xs font-mono w-4">0${index + 1}</div>
                         <div class="flex-1">
                             <div class="text-white font-serif text-sm tracking-wide track-title">${track.title}</div>
@@ -909,168 +916,140 @@
                             <i class="ri-play-fill track-icon text-lg"></i>
                         </div>
                     </div>
-                    <div class="progress-area h-1 w-full bg-white/10 cursor-pointer relative hidden" id="progress-wrap-${index}">
-                        <div class="absolute inset-0 bg-transparent z-20"></div>
-                        <div class="h-full bg-accent-blue w-0 relative pointer-events-none" id="progress-bar-${index}">
-                            <div class="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_10px_#00f3ff]"></div>
-                        </div>
-                    </div>
                 `;
                 playlistContainer.appendChild(div);
-
-                // 绑定进度条拖动
-                const progWrap = div.querySelector(`#progress-wrap-${index}`);
-                progWrap.addEventListener('click', (e) => { e.stopPropagation(); seek(e, index); });
-                progWrap.addEventListener('mousedown', (e) => { e.stopPropagation(); isDragging = true; seek(e, index); });
             });
         }
 
-        // 2. 更新 UI 状态
+        // 2. 核心播放/暂停逻辑 (主按钮点击)
+        window.toggleMainPlayback = function () {
+            if (audio.paused) {
+                // 如果还没开始播，就播当前选中的
+                if (audio.src === "") audio.src = playlist[currentTrackIndex].src;
+                audio.play().then(() => updateUIState(true)).catch(console.error);
+            } else {
+                audio.pause();
+                updateUIState(false);
+            }
+        };
+
+        // 3. 切歌逻辑 (列表点击)
+        window.playTrack = function (index) {
+            if (currentTrackIndex === index && !audio.paused) {
+                // 如果点的是正在放的 -> 暂停
+                audio.pause();
+                updateUIState(false);
+            } else {
+                // 切歌
+                currentTrackIndex = index;
+                audio.src = playlist[index].src;
+                audio.volume = 0.5;
+                audio.play().then(() => updateUIState(true)).catch(console.error);
+            }
+        };
+
+        // 4. UI 更新 (修复文字显示)
         function updateUIState(isPlaying) {
             const track = playlist[currentTrackIndex];
-            trackNameDisplay.innerHTML = isPlaying ? `<span class="text-accent-blue">PLAYING</span>` : "PAUSED";
 
+            // 更新主按钮文字 (关键修复)
             if (isPlaying) {
+                trackNameDisplay.innerHTML = `<span class="text-accent-blue">PLAYING:</span> ${track.title.toUpperCase()}`;
                 masterWave.classList.add('playing');
-                if (timeDisplay) timeDisplay.classList.remove('hidden');
-                if (trackNameDisplay.nextElementSibling) trackNameDisplay.nextElementSibling.style.display = "block";
+
+                // 改变波形动画
+                masterWave.innerHTML = `
+                    <div class="wave-bar w-[2px] h-1 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate]"></div>
+                    <div class="wave-bar w-[2px] h-2 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.1s]"></div>
+                    <div class="wave-bar w-[2px] h-1.5 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.2s]"></div>
+                    <div class="wave-bar w-[2px] h-3 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.3s]"></div>`;
+
+                timeDisplay.classList.remove('hidden');
+                progressContainer.classList.remove('hidden');
             } else {
+                trackNameDisplay.innerHTML = track.title.toUpperCase(); // 暂停时只显示歌名
                 masterWave.classList.remove('playing');
+                masterWave.innerHTML = `
+                    <div class="wave-bar w-[2px] h-1 bg-white"></div>
+                    <div class="wave-bar w-[2px] h-2 bg-white"></div>
+                    <div class="wave-bar w-[2px] h-1.5 bg-white"></div>
+                    <div class="wave-bar w-[2px] h-3 bg-white"></div>`;
             }
 
+            // 更新列表高亮
             document.querySelectorAll('.track-item').forEach((item, index) => {
-                const icon = item.querySelector('.track-icon');
-                const iconBox = item.querySelector('.icon-box');
-                const progWrap = item.querySelector('.progress-area');
                 const title = item.querySelector('.track-title');
+                const iconBox = item.querySelector('.icon-box');
+                const icon = item.querySelector('.track-icon');
 
                 if (index === currentTrackIndex) {
                     title.classList.add('text-accent-blue');
                     iconBox.classList.remove('opacity-0');
                     iconBox.classList.add('opacity-100');
-                    progWrap.classList.remove('hidden');
                     icon.className = isPlaying ? 'ri-pause-fill track-icon text-lg' : 'ri-play-fill track-icon text-lg';
                 } else {
                     title.classList.remove('text-accent-blue');
                     iconBox.classList.remove('opacity-100');
                     iconBox.classList.add('opacity-0');
-                    progWrap.classList.add('hidden');
-                    icon.className = 'ri-play-fill track-icon text-lg';
                 }
             });
         }
 
-        // 3. 播放逻辑
-        window.playTrack = function (index) {
-            if (currentTrackIndex === index) {
-                if (audio.paused) { audio.play(); updateUIState(true); }
-                else { audio.pause(); updateUIState(false); }
-            } else {
-                currentTrackIndex = index;
-                audio.src = playlist[index].src;
-                audio.volume = 0.5;
-                updateUIState(true); // 立即更新UI响应
-                audio.play().then(() => updateUIState(true)).catch(console.error);
-            }
-        };
+        // 5. 进度条逻辑
+        function formatTime(s) {
+            if (isNaN(s)) return "0:00";
+            return Math.floor(s / 60) + ":" + (Math.floor(s % 60) < 10 ? '0' : '') + Math.floor(s % 60);
+        }
 
-        // 4. 进度条逻辑
-        function seek(e, index) {
-            if (index !== currentTrackIndex) return;
-            const rect = e.currentTarget.getBoundingClientRect();
+        audio.addEventListener('timeupdate', () => {
+            if (!isDragging) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progressBar.style.width = `${percent}%`;
+                timeDisplay.innerText = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+            }
+        });
+
+        // 拖动跳转
+        function seek(e) {
+            const rect = progressContainer.getBoundingClientRect();
             const percent = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
             audio.currentTime = percent * audio.duration;
         }
 
-        audio.addEventListener('timeupdate', () => {
-            if (currentTrackIndex === -1) return;
-            if (timeDisplay) timeDisplay.innerText = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+        // 防止点击进度条触发父按钮的 toggleMainPlayback
+        progressContainer.addEventListener('click', (e) => {
+            e.stopPropagation(); // 阻止冒泡
+            seek(e);
+        });
 
-            if (!isDragging) {
-                const bar = document.getElementById(`progress-bar-${currentTrackIndex}`);
-                if (bar) bar.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
-            }
+        progressContainer.addEventListener('mousedown', (e) => {
+            e.stopPropagation(); // 阻止冒泡
+            isDragging = true;
         });
 
         document.addEventListener('mousemove', (e) => {
-            if (isDragging && currentTrackIndex !== -1) {
-                const wrap = document.getElementById(`progress-wrap-${currentTrackIndex}`);
-                if (wrap) {
-                    const rect = wrap.getBoundingClientRect();
-                    const percent = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
-                    const bar = document.getElementById(`progress-bar-${currentTrackIndex}`);
-                    if (bar) bar.style.width = `${percent * 100}%`;
-                }
+            if (isDragging) {
+                const rect = progressContainer.getBoundingClientRect();
+                const percent = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+                progressBar.style.width = `${percent * 100}%`;
             }
         });
 
-        document.addEventListener('mouseup', () => {
+        document.addEventListener('mouseup', (e) => {
             if (isDragging) {
                 isDragging = false;
-                // 拖动结束同步时间
-                const bar = document.getElementById(`progress-bar-${currentTrackIndex}`);
-                if (bar) {
-                    const percent = parseFloat(bar.style.width) / 100;
-                    audio.currentTime = percent * audio.duration;
-                }
+                seek(e); // 拖动结束时跳转
             }
         });
 
+        // 自动连播
         audio.addEventListener('ended', () => {
             let next = (currentTrackIndex + 1) % playlist.length;
             playTrack(next);
         });
 
-        // === D. Three.js 粒子星海背景 ===
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x000000, 0.001);
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-        camera.position.z = 100;
-
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        const container = document.getElementById('canvas-container');
-        if (container) container.appendChild(renderer.domElement);
-
-        const geometry = new THREE.BufferGeometry();
-        const count = 6000;
-        const positions = new Float32Array(count * 3);
-        for (let i = 0; i < count * 3; i += 3) {
-            positions[i] = (Math.random() - 0.5) * 1500;
-            positions[i + 1] = (Math.random() - 0.5) * 1500;
-            positions[i + 2] = (Math.random() - 0.5) * 2000;
-        }
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        const material = new THREE.PointsMaterial({ size: 1.2, color: 0xffffff, transparent: true, opacity: 0.8, sizeAttenuation: true });
-        const starField = new THREE.Points(geometry, material);
-        scene.add(starField);
-
-        let mouseX = 0, mouseY = 0;
-        window.addEventListener('mousemove', e => {
-            mouseX = (e.clientX - window.innerWidth / 2) * 0.05;
-            mouseY = (e.clientY - window.innerHeight / 2) * 0.05;
-        });
-
-        function animate() {
-            starField.rotation.y += 0.0002;
-            starField.rotation.x += 0.0001;
-            camera.position.x += (mouseX - camera.position.x) * 0.05;
-            camera.position.y += (-mouseY - camera.position.y) * 0.05;
-
-            const scrollY = window.scrollY;
-            camera.position.z = 100 - (scrollY * 0.1);
-
-            camera.lookAt(scene.position);
-            renderer.render(scene, camera);
-            requestAnimationFrame(animate);
-        }
-        animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        // 初始化
+        renderPlaylist();
 
         // === E. GSAP 动画 ===
         gsap.to(".mega-title", {
