@@ -1,14 +1,15 @@
-// === BOYU | 星际音频核心 V7.0 (智能续播版) ===
+// === BOYU | 星际音频核心 V7.1 (智能续播增强版) ===
 
 document.addEventListener("DOMContentLoaded", () => {
     
     // 1. 智能路径修正
     const path = window.location.pathname;
+    // 只要路径里包含这些文件夹名，就认为是子页面
     const subFolders = ['/blog/', '/travel/', '/media/'];
     const isSubPage = subFolders.some(folder => path.includes(folder));
     const pathPrefix = isSubPage ? '../' : '';
 
-    // 2. 歌单配置
+    // 2. 歌单配置 (确保文件名与 assets 文件夹里的一致)
     const playlist = [
         { title: "Saman", artist: "Ólafur Arnalds", src: "assets/Saman.mp3" },
         { title: "Oceans", artist: "Ólafur Arnalds", src: "assets/Oceans.mp3" },
@@ -16,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         { title: "My Only Girl", artist: "方大同", src: "assets/MyOnlyGirl.mp3" }
     ];
 
-    // 3. 获取元素
+    // 3. 获取 DOM 元素
     const audio = document.getElementById('global-audio');
     const masterWave = document.getElementById('master-wave');
     const trackNameDisplay = document.getElementById('current-track-name');
@@ -36,51 +37,51 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==============================
     
     function initAudioState() {
-        // 读取记忆
         const savedIndex = localStorage.getItem('audio_index');
         const savedTime = localStorage.getItem('audio_time');
+        // 只有当由页面跳转导致刷新时，我们才认为应该自动续播
+        // 为了简单，我们这里假设只要上次是播放状态，回来就尝试续播
         const wasPlaying = localStorage.getItem('audio_playing') === 'true';
 
-        // 恢复歌曲和进度
         if (savedIndex !== null) {
             currentTrackIndex = parseInt(savedIndex);
             audio.src = pathPrefix + playlist[currentTrackIndex].src;
-            audio.currentTime = parseFloat(savedTime || 0);
+            
+            // 恢复进度 (稍微回退 0.1秒以平滑衔接)
+            const restoreTime = parseFloat(savedTime || 0);
+            if(restoreTime > 0) audio.currentTime = restoreTime;
         } else {
             audio.src = pathPrefix + playlist[0].src;
         }
 
-        // 渲染列表
         renderPlaylist();
 
         // 智能续播逻辑
         if (wasPlaying) {
-            // 1. 更新 UI 为播放状态 (让用户感觉它是开着的)
+            // 先把 UI 设置为播放状态 (制造视觉上的无缝感)
             updateUIState(true);
             
-            // 2. 尝试自动播放
-            var playPromise = audio.play();
+            // 尝试自动播放
+            const playPromise = audio.play();
 
             if (playPromise !== undefined) {
-                playPromise.then(_ => {
-                    // 自动播放成功
-                    console.log("Auto-resume success");
-                })
-                .catch(error => {
-                    // 3. 核心：如果被浏览器拦截，则监听用户的第一次交互
-                    console.log("Auto-play blocked. Waiting for interaction...");
+                playPromise.catch(error => {
+                    console.log("自动播放被拦截，等待用户交互...");
+                    // 如果被拦截，我们不仅不把 UI 变回暂停，反而保持播放 UI
+                    // 并添加一个一次性的全局点击监听，用户点哪里都能恢复声音
                     const resumeAudio = () => {
                         audio.play();
-                        updateUIState(true);
-                        // 移除监听器，只执行一次
                         document.removeEventListener('click', resumeAudio);
-                        document.removeEventListener('scroll', resumeAudio);
                         document.removeEventListener('keydown', resumeAudio);
+                        document.removeEventListener('scroll', resumeAudio);
+                        document.removeEventListener('touchstart', resumeAudio);
                     };
                     
+                    // 只要用户动一下，声音就回来
                     document.addEventListener('click', resumeAudio);
-                    document.addEventListener('scroll', resumeAudio);
                     document.addEventListener('keydown', resumeAudio);
+                    document.addEventListener('scroll', resumeAudio);
+                    document.addEventListener('touchstart', resumeAudio);
                 });
             }
         } else {
@@ -88,15 +89,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 页面关闭/跳转前保存状态
-    window.addEventListener('beforeunload', () => {
+    // 使用 pagehide 事件保存状态 (兼容性更好)
+    window.addEventListener('pagehide', () => {
         localStorage.setItem('audio_index', currentTrackIndex);
         localStorage.setItem('audio_time', audio.currentTime);
-        localStorage.setItem('audio_playing', !audio.paused);
+        // 只有当前真的是播放状态，或者被浏览器暂时拦截但意图是播放时，才存 true
+        const isIntendingToPlay = !audio.paused || masterWave.classList.contains('playing');
+        localStorage.setItem('audio_playing', isIntendingToPlay);
     });
 
     // ==============================
-    // 🎛️ 控制逻辑 (Control Logic)
+    // 🎛️ 控制逻辑
     // ==============================
 
     function renderPlaylist() {
@@ -119,8 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
             playlistContainer.appendChild(div);
         });
-        // 初始化高亮
-        updateListHighlight(audio.paused ? false : true);
+        updateListHighlight();
     }
 
     window.toggleMainPlayback = function() {
@@ -148,19 +150,31 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateUIState(isPlaying) {
         const track = playlist[currentTrackIndex];
         
-        // 更新顶部文字和波形
         if(trackNameDisplay) {
             trackNameDisplay.innerHTML = isPlaying ? `<span class="text-accent-blue">PLAYING:</span> ${track.title.toUpperCase()}` : "AUDIO PAUSED";
         }
+        
         if(masterWave) {
             if(isPlaying) {
                 masterWave.classList.add('playing');
-                masterWave.innerHTML = `<div class="wave-bar w-[2px] h-1 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate]"></div><div class="wave-bar w-[2px] h-2 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.1s]"></div><div class="wave-bar w-[2px] h-1.5 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.2s]"></div><div class="wave-bar w-[2px] h-3 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.3s]"></div>`;
+                // 注入波形动画 HTML (如果之前没有的话)
+                if(!masterWave.querySelector('.animate-\\[sound-wave_0\\.8s_infinite_alternate\\]')) {
+                     masterWave.innerHTML = `
+                        <div class="wave-bar w-[2px] h-1 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate]"></div>
+                        <div class="wave-bar w-[2px] h-2 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.1s]"></div>
+                        <div class="wave-bar w-[2px] h-1.5 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.2s]"></div>
+                        <div class="wave-bar w-[2px] h-3 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.3s]"></div>`;
+                }
             } else {
                 masterWave.classList.remove('playing');
-                masterWave.innerHTML = `<div class="wave-bar w-[2px] h-1 bg-white"></div><div class="wave-bar w-[2px] h-2 bg-white"></div><div class="wave-bar w-[2px] h-1.5 bg-white"></div><div class="wave-bar w-[2px] h-3 bg-white"></div>`;
+                masterWave.innerHTML = `
+                    <div class="wave-bar w-[2px] h-1 bg-white"></div>
+                    <div class="wave-bar w-[2px] h-2 bg-white"></div>
+                    <div class="wave-bar w-[2px] h-1.5 bg-white"></div>
+                    <div class="wave-bar w-[2px] h-3 bg-white"></div>`;
             }
         }
+        
         if(timeDisplay && isPlaying) timeDisplay.classList.remove('hidden');
         if(progressContainer && isPlaying) progressContainer.classList.remove('hidden');
 
