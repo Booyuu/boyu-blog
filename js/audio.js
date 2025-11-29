@@ -1,31 +1,32 @@
-// === BOYU | 星际音频核心 V52.0 (全站通用版) ===
+// === BOYU | 星际音频核心 V8.0 (修复版) ===
 
 document.addEventListener("DOMContentLoaded", () => {
     
-    // 1. 智能路径修正 (自动判断是在主页还是子页)
+    // 1. 智能路径修正
     const path = window.location.pathname;
-    const subFolders = ['/blog/', '/travel/', '/pages/', '/posts/', '/media/'];
+    const subFolders = ['/blog/', '/travel/', '/media/'];
     const isSubPage = subFolders.some(folder => path.includes(folder));
     const pathPrefix = isSubPage ? '../' : '';
 
     // 2. 歌单配置
     const playlist = [
-        { title: "Saman", artist: "Ólafur Arnalds", src: "assets/saman.mp3" },
+        { title: "Saman", artist: "Ólafur Arnalds", src: "assets/Saman.mp3" },
         { title: "Oceans", artist: "Ólafur Arnalds", src: "assets/Oceans.mp3" },
         { title: "Loom", artist: "Ólafur Arnalds", src: "assets/Loom.mp3" },
         { title: "My Only Girl", artist: "方大同", src: "assets/MyOnlyGirl.mp3" }
     ];
 
-    // 3. 获取元素
+    // 3. 获取 DOM 元素 (统一变量名，防止出错)
     const audio = document.getElementById('global-audio');
     const masterWave = document.getElementById('master-wave');
     const trackNameDisplay = document.getElementById('current-track-name');
     const timeDisplay = document.getElementById('time-display');
     const progressContainer = document.getElementById('progress-container');
-    const progressBar = document.getElementById('progress-bar');
+    const progressBar = document.getElementById('progress-bar'); // 关键修复：统一ID
     const playlistContainer = document.getElementById('playlist-container');
+    const durationEl = document.getElementById('duration');
     
-    // 如果页面没加播放器HTML，直接退出，防止报错
+    // 如果页面没播放器，退出
     if (!audio) return;
 
     let currentTrackIndex = 0;
@@ -40,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (savedIndex !== null) {
             currentTrackIndex = parseInt(savedIndex);
-            audio.src = pathPrefix + playlist[currentTrackIndex].src; // 自动加前缀
+            audio.src = pathPrefix + playlist[currentTrackIndex].src;
             const restoreTime = parseFloat(savedTime || 0);
             if(restoreTime > 0 && isFinite(restoreTime)) audio.currentTime = restoreTime;
         } else {
@@ -51,11 +52,10 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if (wasPlaying) {
             updateUIState(true);
-            // 尝试自动播放
             const playPromise = audio.play();
             if (playPromise !== undefined) {
                 playPromise.catch(() => {
-                    console.log("Autoplay blocked, waiting for interaction...");
+                    // 自动播放失败静默处理，等待用户交互
                     const resume = () => { audio.play(); removeListeners(); };
                     const removeListeners = () => ['click','keydown','wheel','touchstart'].forEach(e => document.removeEventListener(e, resume));
                     ['click','keydown','wheel','touchstart'].forEach(e => document.addEventListener(e, resume, {once:true}));
@@ -70,12 +70,11 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener('pagehide', () => {
         localStorage.setItem('audio_index', currentTrackIndex);
         localStorage.setItem('audio_time', audio.currentTime);
-        // 只有当前真的在播，或者UI显示在播，才存true
         const isActive = !audio.paused || (masterWave && masterWave.classList.contains('playing'));
         localStorage.setItem('audio_playing', isActive);
     });
 
-    // === 控制逻辑 ===
+    // === 渲染歌单 ===
     function renderPlaylist() {
         if(!playlistContainer) return;
         playlistContainer.innerHTML = '';
@@ -96,8 +95,11 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
             playlistContainer.appendChild(div);
         });
-        updateUIState(!audio.paused);
+        // 延迟一下更新高亮，确保DOM生成完毕
+        setTimeout(() => updateUIState(!audio.paused), 50);
     }
+
+    // === 全局控制函数 ===
 
     window.toggleMainPlayback = function() {
         if (audio.paused) {
@@ -115,14 +117,19 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             currentTrackIndex = index;
             audio.src = pathPrefix + playlist[index].src;
-            audio.play().then(() => updateUIState(true));
+            audio.play().then(() => updateUIState(true)).catch(console.error);
         }
     };
 
     function updateUIState(isPlaying) {
         const track = playlist[currentTrackIndex];
-        if(trackNameDisplay) trackNameDisplay.innerHTML = isPlaying ? `<span class="text-accent-blue">PLAYING:</span> ${track.title.toUpperCase()}` : "AUDIO PAUSED";
         
+        // 更新文字
+        if(trackNameDisplay) {
+            trackNameDisplay.innerHTML = isPlaying ? `<span class="text-accent-blue">PLAYING:</span> ${track.title.toUpperCase()}` : "AUDIO PAUSED";
+        }
+        
+        // 更新波形
         if(masterWave) {
             if(isPlaying) {
                 masterWave.classList.add('playing');
@@ -133,13 +140,17 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
         
+        // 显示时间/进度条容器
         if(timeDisplay && isPlaying) timeDisplay.classList.remove('hidden');
         if(progressContainer && isPlaying) progressContainer.classList.remove('hidden');
 
-        document.querySelectorAll('.track-item').forEach((item, index) => {
+        // 更新列表高亮
+        const trackItems = document.querySelectorAll('.track-item');
+        trackItems.forEach((item, index) => {
             const title = item.querySelector('.track-title');
             const iconBox = item.querySelector('.icon-box');
             const icon = item.querySelector('.track-icon');
+            
             if (index === currentTrackIndex) {
                 title?.classList.add('text-accent-blue');
                 iconBox?.classList.remove('opacity-0'); iconBox?.classList.add('opacity-100');
@@ -154,32 +165,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function formatTime(s) { return isNaN(s) ? "0:00" : Math.floor(s/60) + ":" + (Math.floor(s%60)<10?'0':'') + Math.floor(s%60); }
 
+    // === 进度条核心 (修复点：变量名 unified) ===
     audio.addEventListener('timeupdate', () => {
+        // 只有在不拖动时才更新，防止跳动
         if (!isDragging && progressBar) {
-            progressBar.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
-            if(timeDisplay) timeDisplay.innerText = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progressBar.style.width = `${percent}%`; // ✅ 这里修复了，现在进度条会动了
+            
+            if(timeDisplay) {
+                const current = formatTime(audio.currentTime);
+                const total = formatTime(audio.duration || 0);
+                timeDisplay.innerText = `${current} / ${total}`;
+            }
         }
     });
 
+    // 拖动交互
     if(progressContainer) {
-        progressContainer.addEventListener('mousedown', (e) => { e.stopPropagation(); isDragging = true; });
-        progressContainer.addEventListener('click', (e) => { e.stopPropagation(); 
-            const rect = progressContainer.getBoundingClientRect();
-            audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
-        });
-        document.addEventListener('mousemove', (e) => { if(isDragging) {
+        function seek(e) {
             const rect = progressContainer.getBoundingClientRect();
             const percent = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
-            progressBar.style.width = `${percent * 100}%`;
-        }});
-        document.addEventListener('mouseup', (e) => { if(isDragging) {
-            isDragging = false;
-            const rect = progressContainer.getBoundingClientRect();
-            audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
-        }});
+            if(audio.duration) audio.currentTime = percent * audio.duration;
+        }
+
+        progressContainer.addEventListener('mousedown', (e) => { e.stopPropagation(); isDragging = true; seek(e); });
+        progressContainer.addEventListener('click', (e) => { e.stopPropagation(); seek(e); });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const rect = progressContainer.getBoundingClientRect();
+                const percent = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+                progressBar.style.width = `${percent * 100}%`;
+            }
+        });
+        
+        document.addEventListener('mouseup', (e) => { 
+            if(isDragging) { isDragging = false; }
+        });
     }
 
-    audio.addEventListener('ended', () => { window.playTrack((currentTrackIndex + 1) % playlist.length); });
+    // === 自动循环 (Loop Back) ===
+    audio.addEventListener('ended', () => {
+        // 如果是最后一首 (index 3)，+1 变成 4，对 4 取余等于 0，回到第一首
+        // 如果是第一首 (index 0)，+1 变成 1，对 4 取余等于 1，播放下一首
+        let nextIndex = (currentTrackIndex + 1) % playlist.length;
+        
+        console.log("Song ended. Playing next:", nextIndex); // Debug info
+        window.playTrack(nextIndex);
+    });
 
     initAudioState();
 });
