@@ -454,84 +454,31 @@
 
             <div class="relative group z-50 font-mono" id="audio-console">
 
-                <div class="flex flex-col">
-                    <button
-                        class="flex items-center gap-3 py-3 opacity-80 hover:opacity-100 transition-opacity cursor-pointer">
-                        <div class="flex items-end gap-[2px] h-3" id="master-wave">
-                            <div class="wave-bar w-[2px] h-1 bg-white"></div>
-                            <div class="wave-bar w-[2px] h-2 bg-white"></div>
-                            <div class="wave-bar w-[2px] h-1.5 bg-white"></div>
-                            <div class="wave-bar w-[2px] h-3 bg-white"></div>
-                        </div>
-                        <div class="flex flex-col leading-none">
-                            <span class="text-[10px] tracking-widest text-white truncate max-w-[120px]"
-                                id="current-track-name">AUDIO OFF</span>
-                            <div id="time-display" class="text-[8px] text-dim mt-1 hidden">
-                                <span id="current-time">0:00</span> / <span id="duration">0:00</span>
-                            </div>
-                        </div>
-                    </button>
-                    <div class="h-1 w-full bg-white/10 rounded-full overflow-hidden cursor-pointer relative group/progress mb-4 hidden"
-                        id="progress-container">
-                        <div class="h-full bg-accent-blue w-0 relative" id="progress-bar">
-                            <div
-                                class="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity shadow-[0_0_10px_#00f3ff]">
-                            </div>
-                        </div>
+                <button
+                    class="flex items-center gap-3 py-3 opacity-80 hover:opacity-100 transition-opacity cursor-pointer">
+                    <div class="flex items-end gap-[2px] h-3" id="master-wave">
+                        <div class="wave-bar w-[2px] h-1 bg-white"></div>
+                        <div class="wave-bar w-[2px] h-2 bg-white"></div>
+                        <div class="wave-bar w-[2px] h-1.5 bg-white"></div>
+                        <div class="wave-bar w-[2px] h-3 bg-white"></div>
                     </div>
-                </div>
+                    <div class="flex flex-col leading-none text-left">
+                        <span class="text-[10px] tracking-widest text-white truncate max-w-[120px]"
+                            id="current-track-name">AUDIO OFF</span>
+                        <span id="time-display" class="text-[8px] text-dim mt-0.5 hidden">0:00 / 0:00</span>
+                    </div>
+                </button>
 
                 <div
-                    class="absolute top-full left-0 w-72 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2 pointer-events-none group-hover:pointer-events-auto">
-                    <div
-                        class="bg-black/90 backdrop-blur-xl border border-white/20 p-2 flex flex-col gap-1 shadow-2xl shadow-blue-900/20">
+                    class="absolute top-full left-0 w-80 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2 pointer-events-none group-hover:pointer-events-auto">
+                    <div class="bg-black/95 backdrop-blur-xl border border-white/20 flex flex-col shadow-2xl">
+
                         <div class="absolute top-0 left-0 w-2 h-2 border-t border-l border-accent-blue"></div>
                         <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-accent-blue"></div>
 
-                        <div class="track-item flex items-center gap-3 p-3 hover:bg-white/10 cursor-pointer transition-colors border-b border-white/5"
-                            onclick="playTrack(0)">
-                            <div class="text-dim text-xs">01</div>
-                            <div>
-                                <div class="text-white font-serif text-sm leading-none">Saman</div>
-                                <div class="text-dim text-[10px] mt-1">Ólafur Arnalds</div>
-                            </div>
-                            <div class="ml-auto text-accent-blue opacity-0 transition-opacity track-icon-container">
-                                <i class="ri-play-fill track-icon"></i>
-                            </div>
+                        <div id="playlist-container">
                         </div>
 
-                        <div class="track-item flex items-center gap-3 p-3 hover:bg-white/10 cursor-pointer transition-colors border-b border-white/5"
-                            onclick="playTrack(1)">
-                            <div class="text-dim text-xs">02</div>
-                            <div>
-                                <div class="text-white font-serif text-sm leading-none">Oceans</div>
-                                <div class="text-dim text-[10px] mt-1">Ólafur Arnalds</div>
-                            </div>
-                            <div class="ml-auto text-accent-blue opacity-0 transition-opacity track-icon-container"><i
-                                    class="ri-play-fill track-icon"></i></div>
-                        </div>
-
-                        <div class="track-item flex items-center gap-3 p-3 hover:bg-white/10 cursor-pointer transition-colors border-b border-white/5"
-                            onclick="playTrack(2)">
-                            <div class="text-dim text-xs">03</div>
-                            <div>
-                                <div class="text-white font-serif text-sm leading-none">Loom</div>
-                                <div class="text-dim text-[10px] mt-1">Ólafur Arnalds</div>
-                            </div>
-                            <div class="ml-auto text-accent-blue opacity-0 transition-opacity track-icon-container"><i
-                                    class="ri-play-fill track-icon"></i></div>
-                        </div>
-
-                        <div class="track-item flex items-center gap-3 p-3 hover:bg-white/10 cursor-pointer transition-colors"
-                            onclick="playTrack(3)">
-                            <div class="text-dim text-xs">04</div>
-                            <div>
-                                <div class="text-white font-serif text-sm leading-none">My Only Girl</div>
-                                <div class="text-dim text-[10px] mt-1">方大同</div>
-                            </div>
-                            <div class="ml-auto text-accent-blue opacity-0 transition-opacity track-icon-container"><i
-                                    class="ri-play-fill track-icon"></i></div>
-                        </div>
                     </div>
                 </div>
             </div>
