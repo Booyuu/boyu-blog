@@ -871,44 +871,173 @@
 
     </main>
 
+    <script src="js/lang.js"></script>
+
     <script>
-        // 1. 加载动画
+        // === A. 加载动画 (Preloader) ===
         const preloader = document.getElementById('preloader');
         const progressBar = document.querySelector('.loader-progress');
         const percentText = document.getElementById('loading-percent');
+
+        // 安全超时
+        setTimeout(() => {
+            if (preloader && preloader.style.display !== 'none') {
+                gsap.to(preloader, { opacity: 0, onComplete: () => preloader.style.display = 'none' });
+            }
+        }, 5000);
+
         let progress = 0;
         const interval = setInterval(() => {
-            progress += Math.random() * 5; if (progress > 100) progress = 100;
-            progressBar.style.width = `${progress}%`; percentText.innerText = Math.floor(progress);
+            progress += Math.random() * 15;
+            if (progress > 100) progress = 100;
+            if (progressBar) progressBar.style.width = `${progress}%`;
+            if (percentText) percentText.innerText = Math.floor(progress);
+
             if (progress === 100) {
                 clearInterval(interval);
-                gsap.to(preloader, { opacity: 0, duration: 1, ease: "power2.inOut", onComplete: () => preloader.style.display = 'none' });
-                gsap.from(".mega-title", { y: 100, opacity: 0, duration: 1.5, delay: 0.5, ease: "power3.out" });
-                gsap.from(".mega-subtitle", { y: 20, opacity: 0, duration: 1.5, delay: 0.8, ease: "power3.out" });
+                gsap.to(preloader, {
+                    opacity: 0,
+                    duration: 1,
+                    ease: "power2.inOut",
+                    onComplete: () => {
+                        preloader.style.display = 'none';
+                        gsap.from(".mega-title", { y: 100, opacity: 0, duration: 1.5, delay: 0.5, ease: "power3.out" });
+                        gsap.from(".mega-subtitle", { y: 20, opacity: 0, duration: 1.5, delay: 0.8, ease: "power3.out" });
+                    }
+                });
             }
         }, 30);
 
         gsap.registerPlugin(ScrollTrigger);
 
-        // 2. 光标跟随
-        const cursor = document.getElementById('cursor-dot'), ring = document.getElementById('cursor-circle');
+        // === B. 光标跟随 ===
+        const cursor = document.getElementById('cursor-dot');
+        const ring = document.getElementById('cursor-circle');
         window.addEventListener('mousemove', e => {
             gsap.to(cursor, { x: e.clientX - 3, y: e.clientY - 3, duration: 0 });
             gsap.to(ring, { x: e.clientX - 25, y: e.clientY - 25, duration: 0.15 });
         });
-        document.querySelectorAll('a, .project-item, article, img, .btn-astral, button').forEach(el => {
+        document.querySelectorAll('a, button, .project-item, article, img, .track-item').forEach(el => {
             el.addEventListener('mouseenter', () => gsap.to(ring, { scale: 1.5, borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.1)' }));
             el.addEventListener('mouseleave', () => gsap.to(ring, { scale: 1, borderColor: 'rgba(255,255,255,0.3)', backgroundColor: 'transparent' }));
         });
 
-        // 3. Three.js 粒子星海 (V39+V41 修正版)
+        // === C. 星际音频系统 V3.0 (Pro版) ===
+        const playlist = [
+            { title: "Saman", artist: "Ólafur Arnalds", src: "assets/saman.mp3" },
+            { title: "Oceans", artist: "Ólafur Arnalds", src: "assets/Oceans.mp3" },
+            { title: "Loom", artist: "Ólafur Arnalds", src: "assets/Loom.mp3" },
+            { title: "My Only Girl", artist: "方大同", src: "assets/MyOnlyGirl.mp3" }
+        ];
+
+        const audio = document.getElementById('global-audio'); // 修正ID为 global-audio (对应HTML)
+        const masterWave = document.getElementById('master-wave');
+        const trackNameDisplay = document.getElementById('current-track-name');
+        const timeDisplayArea = document.getElementById('time-display');
+        const progressContainer = document.getElementById('progress-container');
+        const progBar = document.getElementById('progress-bar'); // 变量名微调防止冲突
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
+        const trackItems = document.querySelectorAll('.track-item');
+
+        let currentTrackIndex = -1;
+        let isDragging = false;
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function updateUIState(isPlaying) {
+            const track = playlist[currentTrackIndex];
+
+            trackItems.forEach(item => {
+                const iconContainer = item.querySelector('.track-icon-container');
+                const icon = item.querySelector('.track-icon');
+                if (iconContainer) iconContainer.classList.remove('opacity-100');
+                if (icon) { icon.classList.remove('ri-pause-fill'); icon.classList.add('ri-play-fill'); }
+            });
+
+            if (currentTrackIndex !== -1) {
+                const currentItem = trackItems[currentTrackIndex];
+                const currentIconContainer = currentItem?.querySelector('.track-icon-container');
+                const currentIcon = currentItem?.querySelector('.track-icon');
+
+                if (currentIconContainer) currentIconContainer.classList.add('opacity-100');
+
+                if (isPlaying) {
+                    trackNameDisplay.innerHTML = `<span class="text-accent-blue">▶</span> ${track.title}`;
+                    masterWave.innerHTML = `
+                        <div class="wave-bar w-[2px] h-1 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate]"></div>
+                        <div class="wave-bar w-[2px] h-2 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.1s]"></div>
+                        <div class="wave-bar w-[2px] h-1.5 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.2s]"></div>
+                        <div class="wave-bar w-[2px] h-3 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.3s]"></div>`;
+                    if (timeDisplayArea) timeDisplayArea.classList.remove('hidden');
+                    if (progressContainer) progressContainer.classList.remove('hidden');
+                    if (currentIcon) { currentIcon.classList.remove('ri-play-fill'); currentIcon.classList.add('ri-pause-fill'); }
+                } else {
+                    trackNameDisplay.innerHTML = `<span class="text-dim">❚❚</span> ${track.title}`;
+                    masterWave.innerHTML = `
+                        <div class="wave-bar w-[2px] h-1 bg-white"></div>
+                        <div class="wave-bar w-[2px] h-2 bg-white"></div>
+                        <div class="wave-bar w-[2px] h-1.5 bg-white"></div>
+                        <div class="wave-bar w-[2px] h-3 bg-white"></div>`;
+                    if (currentIcon) { currentIcon.classList.remove('ri-pause-fill'); currentIcon.classList.add('ri-play-fill'); }
+                }
+            }
+        }
+
+        window.playTrack = function (index) {
+            if (currentTrackIndex === index) {
+                if (audio.paused) { audio.play(); updateUIState(true); }
+                else { audio.pause(); updateUIState(false); }
+                return;
+            }
+            currentTrackIndex = index;
+            audio.src = playlist[index].src;
+            audio.volume = 0.5;
+            audio.addEventListener('loadedmetadata', () => {
+                if (durationEl) durationEl.innerText = formatTime(audio.duration);
+            }, { once: true });
+            audio.play().then(() => updateUIState(true)).catch(e => console.error("Play error:", e));
+        };
+
+        audio.addEventListener('timeupdate', () => {
+            if (!isDragging && progBar) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progBar.style.width = `${percent}%`;
+                if (currentTimeEl) currentTimeEl.innerText = formatTime(audio.currentTime);
+            }
+        });
+
+        if (progressContainer) {
+            function seek(e) {
+                const rect = progressContainer.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                audio.currentTime = percent * audio.duration;
+            }
+            progressContainer.addEventListener('mousedown', (e) => { isDragging = true; seek(e); });
+            document.addEventListener('mousemove', (e) => { if (isDragging) seek(e); });
+            document.addEventListener('mouseup', () => { isDragging = false; });
+        }
+
+        audio.addEventListener('ended', () => {
+            let nextIndex = (currentTrackIndex + 1) % playlist.length;
+            playTrack(nextIndex);
+        });
+
+        // === D. Three.js 粒子背景 ===
         const scene = new THREE.Scene();
         scene.fog = new THREE.FogExp2(0x000000, 0.001);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
         camera.position.z = 100;
+
         const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        const container = document.getElementById('canvas-container');
+        if (container) container.appendChild(renderer.domElement);
 
         const geometry = new THREE.BufferGeometry();
         const count = 6000;
@@ -934,22 +1063,20 @@
             starField.rotation.x += 0.0001;
             camera.position.x += (mouseX - camera.position.x) * 0.05;
             camera.position.y += (-mouseY - camera.position.y) * 0.05;
-
-            const scrollY = window.scrollY;
-            camera.position.z = 100 - (scrollY * 0.1); // 飞行感核心
-
+            camera.position.z = 100 - (window.scrollY * 0.1);
             camera.lookAt(scene.position);
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         }
         animate();
+
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // 4. GSAP 动画
+        // === E. GSAP 动画 ===
         gsap.to(".mega-title", {
             scrollTrigger: { trigger: "#hero", start: "top top", end: "bottom top", scrub: 1 },
             y: -150, opacity: 0
@@ -961,154 +1088,33 @@
             });
         });
 
-        // 5. Lenis 平滑滚动
         const lenis = new Lenis({ duration: 1.5, smooth: true });
         function raf(time) { lenis.raf(time); requestAnimationFrame(raf); } requestAnimationFrame(raf);
 
-        // === 星际音频系统 V3.0 (Pro版) ===
+        // === F. Formspree 表单逻辑 (补回) ===
+        const form = document.getElementById("contact-form"); // 确保 HTML 中 form id="contact-form"
+        if (form) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const status = document.getElementById("form-status");
+                if (status) { status.classList.remove("hidden"); status.innerText = "TRANSMITTING..."; }
 
-        // 配置 (请确保文件名大小写正确)
-        const playlist = [
-            { title: "Saman", artist: "Ólafur Arnalds", src: "assets/Saman.mp3" },
-            { title: "Oceans", artist: "Ólafur Arnalds", src: "assets/Oceans.mp3" },
-            { title: "Loom", artist: "Ólafur Arnalds", src: "assets/Loom.mp3" },
-            { title: "My Only Girl", artist: "方大同", src: "assets/MyOnlyGirl.mp3" }
-        ];
-
-        // DOM 元素获取
-        const audio = document.getElementById('global-audio');
-        const masterWave = document.getElementById('master-wave');
-        const trackNameDisplay = document.getElementById('current-track-name');
-        const timeDisplayArea = document.getElementById('time-display');
-        const progressContainer = document.getElementById('progress-container');
-        const currentTimeEl = document.getElementById('current-time');
-        const durationEl = document.getElementById('duration');
-        const trackItems = document.querySelectorAll('.track-item');
-
-        let currentTrackIndex = -1;
-        let isDragging = false; // 是否正在拖动进度条
-
-        // 格式化时间 (将秒转为 mm:ss)
-        function formatTime(seconds) {
-            if (isNaN(seconds)) return "0:00";
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-        }
-
-        // 更新 UI 状态 (图标、文字、波形)
-        function updateUIState(isPlaying) {
-            const track = playlist[currentTrackIndex];
-
-            // 1. 重置所有列表项图标为播放三角，并隐藏
-            trackItems.forEach(item => {
-                const iconContainer = item.querySelector('.track-icon-container');
-                const icon = item.querySelector('.track-icon');
-                iconContainer.classList.remove('opacity-100');
-                icon.classList.remove('ri-pause-fill');
-                icon.classList.add('ri-play-fill');
+                fetch(e.target.action, {
+                    method: form.method,
+                    body: new FormData(e.target),
+                    headers: { 'Accept': 'application/json' }
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.href = "email_success.html";
+                    } else {
+                        if (status) { status.innerText = "TRANSMISSION FAILED."; status.classList.add("text-red-500"); }
+                    }
+                }).catch(error => {
+                    if (status) { status.innerText = "NETWORK ERROR."; status.classList.add("text-red-500"); }
+                });
             });
-
-            if (currentTrackIndex !== -1) {
-                // 2. 高亮当前列表项
-                const currentItem = trackItems[currentTrackIndex];
-                const currentIconContainer = currentItem.querySelector('.track-icon-container');
-                const currentIcon = currentItem.querySelector('.track-icon');
-
-                currentIconContainer.classList.add('opacity-100'); // 显示图标容器
-
-                if (isPlaying) {
-                    // 播放状态
-                    trackNameDisplay.innerHTML = `<span class="text-accent-blue">▶</span> ${track.title}`;
-                    masterWave.classList.add('playing');
-                    timeDisplayArea.classList.remove('hidden');
-                    progressContainer.classList.remove('hidden');
-                    // 图标变暂停
-                    currentIcon.classList.remove('ri-play-fill');
-                    currentIcon.classList.add('ri-pause-fill');
-                } else {
-                    // 暂停状态
-                    trackNameDisplay.innerHTML = `<span class="text-dim">❚❚</span> ${track.title}`;
-                    masterWave.classList.remove('playing');
-                    // 图标变播放
-                    currentIcon.classList.remove('ri-pause-fill');
-                    currentIcon.classList.add('ri-play-fill');
-                }
-            }
         }
-
-        // 核心播放函数
-        window.playTrack = function (index) {
-            // 情况A：点击了当前正在播放或暂停的歌
-            if (currentTrackIndex === index) {
-                if (audio.paused) {
-                    audio.play(); // 继续播放 (断点续传)
-                    updateUIState(true);
-                } else {
-                    audio.pause(); // 暂停
-                    updateUIState(false);
-                }
-                return;
-            }
-
-            // 情况B：切歌 (加载新源，从头播)
-            currentTrackIndex = index;
-            audio.src = playlist[index].src;
-            audio.volume = 0.5;
-            // 加载元数据后更新总时长
-            audio.addEventListener('loadedmetadata', () => {
-                durationEl.innerText = formatTime(audio.duration);
-            }, { once: true });
-
-            audio.play().then(() => {
-                updateUIState(true);
-            }).catch(e => console.error("播放失败:", e));
-        };
-
-        // === 进度条与时间控制 ===
-
-        // 1. 监听时间更新
-        audio.addEventListener('timeupdate', () => {
-            if (!isDragging) { // 拖动时不更新，防止跳动
-                const percent = (audio.currentTime / audio.duration) * 100;
-                progressBar.style.width = `${percent}%`;
-                currentTimeEl.innerText = formatTime(audio.currentTime);
-            }
-        });
-
-        // 2. 进度条点击跳转
-        function seek(e) {
-            const rect = progressContainer.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const width = rect.width;
-            const percent = clickX / width;
-            audio.currentTime = percent * audio.duration;
-        }
-
-        progressContainer.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            seek(e); // 点击即跳转
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                seek(e); // 拖动时持续跳转
-            }
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-            }
-        });
-
-        // 3. 自动连播
-        audio.addEventListener('ended', () => {
-            let nextIndex = (currentTrackIndex + 1) % playlist.length;
-            playTrack(nextIndex);
-        });
     </script>
-    <script src="js/lang.js"></script>
 </body>
 
 </html>
