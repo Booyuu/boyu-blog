@@ -1078,6 +1078,65 @@
         </div>
     </div>
 
+    <div id="tipModal" class="fixed inset-0 z-[110] hidden opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="toggleTipModal(false)"></div>
+
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm p-1">
+            <div class="bg-black/95 border border-white/20 shadow-[0_0_50px_rgba(255,255,255,0.1)] relative transform transition-all duration-300 scale-95"
+                id="tipModalContent">
+
+                <div class="absolute top-0 left-0 w-2 h-2 border-t border-l border-white"></div>
+                <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white"></div>
+
+                <div class="flex justify-between items-center p-5 border-b border-white/10">
+                    <h3 class="font-mono text-sm tracking-widest text-white">TRANSMISSION LINK</h3>
+                    <button onclick="toggleTipModal(false)" class="text-dim hover:text-white"><i
+                            class="ri-close-line text-xl"></i></button>
+                </div>
+
+                <div id="tipChoiceView" class="hidden p-8 text-center space-y-4">
+                    <p class="text-xs text-dim mb-4">Uplink established. Select transmission method:</p>
+
+                    <button onclick="executeEthTransaction()"
+                        class="w-full py-3 bg-accent-blue text-black font-bold font-mono text-xs hover:bg-white transition-colors">
+                        <i class="ri-flashlight-fill mr-1"></i> AUTO-EXECUTE (0.01 ETH)
+                    </button>
+
+                    <div class="text-[10px] text-dim">- OR -</div>
+
+                    <button onclick="showManualTransfer()"
+                        class="w-full py-3 border border-white/20 text-white font-mono text-xs hover:border-white transition-colors">
+                        <i class="ri-qr-code-line mr-1"></i> SHOW ADDRESS / QR
+                    </button>
+                </div>
+
+                <div id="tipManualView" class="p-6 flex flex-col items-center text-center space-y-6">
+
+                    <div class="w-32 h-32 bg-white p-2 rounded-sm">
+                        <img id="walletQrCode" src="" class="w-full h-full object-contain">
+                    </div>
+
+                    <div class="w-full space-y-2">
+                        <p class="text-[10px] text-dim uppercase tracking-widest">ETH / ERC-20 Receiver</p>
+                        <div class="flex items-center gap-2 bg-white/5 border border-white/10 p-2 rounded">
+                            <span id="displayAddress"
+                                class="font-mono text-[10px] text-accent-blue break-all text-left flex-1">0x...</span>
+                            <button onclick="copyAddress()" class="text-dim hover:text-white">
+                                <i class="ri-file-copy-line"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="text-[9px] text-gray-500">
+                        Scan with any wallet app (Metamask, OKX, Trust, etc.)<br>
+                        Network: Ethereum / Arbitrum / Optimism / X Layer
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <script src="js/lang.js"></script>
     <script src="js/audio.js"></script>
 
@@ -1413,8 +1472,114 @@
             if (input) input.value = amount;
         }
 
-        // === J. 发送打赏 (Web3) ===
-        // ⚠️ 请确保你的 sendTip 函数也在代码里，如果没有，请告诉我，我再发你一次
+        // === K. 智能打赏逻辑 (Smart Tipping) ===
+
+        // 1. 配置你的收款地址
+        const MY_RECEIVER_ADDRESS = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F"; // ⬅️ 改这里！！
+
+        // 引用元素
+        const tipModal = document.getElementById('tipModal');
+        const tipModalContent = document.getElementById('tipModalContent');
+        const tipChoiceView = document.getElementById('tipChoiceView');
+        const tipManualView = document.getElementById('tipManualView');
+        const walletQrCode = document.getElementById('walletQrCode');
+        const displayAddress = document.getElementById('displayAddress');
+
+        // 保存用户想打赏的金额
+        let pendingTipAmount = 0;
+
+        // 2. 初始化：把你的地址填进去
+        displayAddress.innerText = MY_RECEIVER_ADDRESS;
+        // 使用公开API生成二维码
+        walletQrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${MY_RECEIVER_ADDRESS}`;
+
+        // 3. 点击 SEND 按钮触发的主函数
+        function sendTip() {
+            const input = document.getElementById('customTipInput');
+            const amount = input ? input.value : 0;
+
+            if (!amount || amount <= 0) {
+                alert("Please enter a valid amount.");
+                return;
+            }
+
+            pendingTipAmount = amount; // 记住这个金额
+
+            // 判断是否已连接钱包
+            const isConnected = document.getElementById('navWalletText').innerText.startsWith("0x");
+
+            toggleTipModal(true); // 打开弹窗
+
+            if (isConnected) {
+                // 情况A：已连接 -> 让用户选
+                tipChoiceView.classList.remove('hidden');
+                tipManualView.classList.add('hidden');
+
+                // 更新按钮文字，显示金额
+                const btn = tipChoiceView.querySelector('button');
+                btn.innerHTML = `<i class="ri-flashlight-fill mr-1"></i> AUTO-EXECUTE (${amount} ETH)`;
+            } else {
+                // 情况B：未连接 -> 直接显示二维码
+                showManualTransfer();
+            }
+        }
+
+        // 4. 显示手动转账视图
+        function showManualTransfer() {
+            tipChoiceView.classList.add('hidden');
+            tipManualView.classList.remove('hidden');
+        }
+
+        // 5. 执行自动转账 (MetaMask/OKX)
+        async function executeEthTransaction() {
+            try {
+                // 简单的单位转换 (ETH -> Hex Wei)
+                const weiValue = BigInt(Math.floor(parseFloat(pendingTipAmount) * 1e18)).toString(16);
+
+                const params = [{
+                    from: window.ethereum.selectedAddress,
+                    to: MY_RECEIVER_ADDRESS,
+                    value: "0x" + weiValue
+                }];
+
+                // 唤起钱包
+                await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: params,
+                });
+
+                alert("Transaction Sent! Thank you for the fuel.");
+                toggleTipModal(false);
+
+            } catch (error) {
+                console.error(error);
+                alert("Transaction failed or cancelled.");
+            }
+        }
+
+        // 6. 弹窗开关动画
+        function toggleTipModal(show) {
+            if (show) {
+                tipModal.classList.remove('hidden');
+                setTimeout(() => {
+                    tipModal.classList.remove('opacity-0');
+                    tipModalContent.classList.remove('scale-95');
+                    tipModalContent.classList.add('scale-100');
+                }, 10);
+            } else {
+                tipModal.classList.add('opacity-0');
+                tipModalContent.classList.remove('scale-100');
+                tipModalContent.classList.add('scale-95');
+                setTimeout(() => tipModal.classList.add('hidden'), 300);
+            }
+        }
+
+        // 7. 复制地址功能
+        function copyAddress() {
+            navigator.clipboard.writeText(MY_RECEIVER_ADDRESS).then(() => {
+                alert("Address copied to clipboard!");
+            });
+        }
 
     </script>
 </body>
