@@ -13,6 +13,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#050505',
+                        'accent-blue': '#00f3ff',
+                    },
+                    fontFamily: {
+                        serif: ['"Cinzel"', 'serif'],
+                        mono: ['"Space Grotesk"', 'monospace'],
+                        sans: ['"Inter"', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
     <style>
         body {
             background-color: #050505;
