@@ -128,14 +128,29 @@
     <div id="noise-layer"></div>
     <div id="canvas-container"></div>
 
-    <nav class="fixed top-0 w-full p-8 z-50 flex justify-between items-center mix-blend-difference">
-        <a href="../index.html"
-            class="font-mono text-xs tracking-widest hover:text-white text-gray-400 transition-colors">
-            <i class="ri-arrow-left-line"></i> RETURN TO BASE
-        </a>
-        <div class="font-serif text-xl tracking-widest text-white hidden md:block">NEURAL LIBRARY</div>
-        <div class="w-10"></div>
-        <div id="audio-slot"></div>
+    <nav class="fixed top-0 w-full p-8 z-50 flex justify-between items-center mix-blend-difference pointer-events-none">
+        
+        <div class="pointer-events-auto flex items-center gap-6">
+            
+            <a href="../index.html" 
+               class="font-mono text-xs tracking-widest hover:text-white text-gray-400 transition-colors group flex items-center gap-2" 
+               data-i18n="nav.back">
+                <i class="ri-arrow-left-line group-hover:-translate-x-1 transition-transform"></i> RETURN TO BASE
+            </a>
+
+            <div class="h-4 w-[1px] bg-white/20"></div>
+
+            <div id="audio-slot"></div>
+
+        </div>
+
+        <div class="font-serif text-xl tracking-widest text-white absolute left-1/2 -translate-x-1/2 hidden md:block" 
+             data-i18n="PAGE_TITLE_KEY">
+            PAGE_TITLE_TEXT
+        </div>
+
+        <div></div>
+
     </nav>
 
     <main class="max-w-[1200px] mx-auto px-8 pt-32 pb-20 relative z-10">
