@@ -778,14 +778,14 @@
                                 var status = document.getElementById("form-status");
                                 var data = new FormData(event.target);
 
-                                // 2. 用 JS 偷偷发送数据
+                                // 2. JS发送数据
                                 fetch(event.target.action, {
                                     method: form.method,
                                     body: data,
                                     headers: { 'Accept': 'application/json' }
                                 }).then(response => {
                                     if (response.ok) {
-                                        // 3. 发送成功？立刻强制跳转！
+                                        // 3. 强制跳转
                                         window.location.href = "email_success.html";
                                     } else {
                                         status.innerHTML = "Error sending message.";
