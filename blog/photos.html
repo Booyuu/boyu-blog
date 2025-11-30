@@ -6,15 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BOYU | VISUAL ARCHIVES</title>
 
-    <!-- Favicon -->
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23050505%22 stroke=%22white%22 stroke-width=%222%22/><circle cx=%2250%22 cy=%2250%22 r=%2215%22 fill=%22%2300f3ff%22 filter=%22blur(2px)%22/></svg>">
-
-    <!-- Fonts & Tailwind -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@500&family=Space+Grotesk:wght@300&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
         body {
@@ -22,147 +15,178 @@
             color: #EAEAEA;
         }
 
-        #bg-layer {
+        /* 粒子背景 */
+        #bg-canvas {
             position: fixed;
             inset: 0;
             z-index: -1;
-            background-color: #050505;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
         }
 
-        /* 图片统一裁剪比例 */
+        /* 图片卡片 */
+        .photo-card {
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            transition: all .4s ease;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
         .photo-card img {
             width: 100%;
-            height: 260px;
+            height: 100%;
             object-fit: cover;
-            object-position: center;
-            border-radius: 6px;
-            transition: 0.4s;
+            filter: grayscale(80%);
+            transition: all .5s ease;
+        }
+
+        .photo-card:hover {
+            border-color: #fff;
+            transform: translateY(-4px);
         }
 
         .photo-card:hover img {
             filter: grayscale(0%);
-            transform: scale(1.02);
+            transform: scale(1.05);
         }
 
-        /* 波形动画 */
-        .wave-bar {
-            transition: all 0.2s ease;
-            transform-origin: bottom;
+        /* 固定比例：16:9 响应式 */
+        .photo-wrapper {
+            width: 100%;
+            aspect-ratio: 16 / 9;
         }
 
-        .playing .wave-bar {
-            animation: sound-wave 0.8s infinite ease-in-out alternate;
-            background-color: #00f3ff !important;
+        .overlay-info {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent);
+            opacity: 0;
+            transition: .3s;
         }
 
-        .playing .wave-bar:nth-child(1) { animation-delay: 0s; }
-        .playing .wave-bar:nth-child(2) { animation-delay: .1s; }
-        .playing .wave-bar:nth-child(3) { animation-delay: .2s; }
-        .playing .wave-bar:nth-child(4) { animation-delay: .3s; }
-
-        @keyframes sound-wave {
-            0% { height: 2px; }
-            100% { height: 12px; }
-        }
-
-        /* 图片查看器（Lightbox） */
-        #lightbox {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(6px);
-            z-index: 100;
-            display: none;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #lightbox img {
-            max-width: 90%;
-            max-height: 90%;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,255,255,0.2);
+        .photo-card:hover .overlay-info {
+            opacity: 1;
         }
     </style>
 </head>
 
 <body>
 
-<div id="bg-layer"></div>
+    <!-- 粒子背景 -->
+    <canvas id="bg-canvas"></canvas>
 
-<nav class="fixed top-0 w-full p-8 z-50 flex justify-between items-center mix-blend-difference pointer-events-none">
-    <div class="pointer-events-auto flex items-center gap-6">
-        <a href="../index.html"
-           class="font-mono text-xs tracking-widest hover:text-white text-gray-400 transition-colors group flex items-center gap-2">
-           <i class="ri-arrow-left-line group-hover:-translate-x-1 transition-transform"></i> RETURN TO BASE
-        </a>
+    <!-- 导航 + 播放器 -->
+    <nav class="fixed top-0 w-full p-8 z-50 flex justify-between items-center mix-blend-difference pointer-events-none">
 
-        <div class="h-4 w-[1px] bg-white/20"></div>
-        <div id="audio-slot"></div>
-    </div>
-</nav>
+        <div class="pointer-events-auto flex items-center gap-6">
 
-<main class="max-w-[1600px] mx-auto px-8 pt-40 pb-20 grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-10">
+            <a href="../index.html"
+               class="font-mono text-xs tracking-widest hover:text-white text-gray-400 transition-colors group flex items-center gap-2">
+                <i class="ri-arrow-left-line group-hover:-translate-x-1 transition-transform"></i>
+                RETURN TO BASE
+            </a>
 
-    <!-- 左侧标题栏 -->
-    <section>
-        <h1 class="font-serif text-5xl text-white leading-none mb-6">VISUAL<br>ARCHIVES</h1>
-        <p class="font-mono text-gray-400 text-sm leading-relaxed">
-            Moments captured across timelines, cities, and hidden sectors.
-        </p>
-    </section>
+            <div class="h-4 w-[1px] bg-white/20"></div>
 
-    <!-- 右侧照片网格 -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-
-        <!-- 多放几张来保证布局稳定 -->
-        <div class="photo-card cursor-pointer">
-            <img src="https://images.unsplash.com/photo-1476610182048-b716b8518aae?q=80&w=1000">
+            <!-- 播放器插槽 -->
+            <div id="audio-slot"></div>
         </div>
+    </nav>
 
-        <div class="photo-card cursor-pointer">
-            <img src="https://images.unsplash.com/photo-1504609773096-104ff2c73ba4?q=80&w=1000">
+    <!-- 主体内容 -->
+    <main class="max-w-[1500px] mx-auto px-8 pt-32 pb-20">
+
+        <h1 class="text-5xl font-serif font-bold mb-16">VISUAL ARCHIVES</h1>
+
+        <!-- 新布局：整齐网格 -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+
+            <!-- Photo 1 -->
+            <div class="photo-card">
+                <div class="photo-wrapper">
+                    <img src="https://images.unsplash.com/photo-1476610182048-b716b8518aae?q=80&w=1200">
+                </div>
+
+                <div class="overlay-info">
+                    <h3 class="font-serif text-xl text-white">ICELANDIC HIGHLANDS</h3>
+                </div>
+            </div>
+
+            <!-- Photo 2 -->
+            <div class="photo-card">
+                <div class="photo-wrapper">
+                    <img src="https://images.unsplash.com/photo-1504609773096-104ff2c73ba4?q=80&w=1200">
+                </div>
+
+                <div class="overlay-info">
+                    <h3 class="font-serif text-xl text-white">THE VOID</h3>
+                </div>
+            </div>
+
+            <!-- Photo 3 -->
+            <div class="photo-card">
+                <div class="photo-wrapper">
+                    <img src="https://images.unsplash.com/photo-1536431311719-398b670a9e6d?q=80&w=1200">
+                </div>
+
+                <div class="overlay-info">
+                    <h3 class="font-serif text-xl text-white">NEON NIGHTS</h3>
+                </div>
+            </div>
+
         </div>
+    </main>
 
-        <div class="photo-card cursor-pointer">
-            <img src="https://images.unsplash.com/photo-1536431311719-398b670a9e6d?q=80&w=1000">
-        </div>
+    <!-- 音频核心 -->
+    <script src="../js/audio.js"></script>
 
-        <div class="photo-card cursor-pointer">
-            <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?q=80&w=1000">
-        </div>
+    <script>
+        /* 粒子背景 */
+        const canvas = document.getElementById('bg-canvas');
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
 
-        <div class="photo-card cursor-pointer">
-            <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1000">
-        </div>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.position.z = 200;
 
-        <div class="photo-card cursor-pointer">
-            <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1000">
-        </div>
+        const particles = new THREE.BufferGeometry();
+        const count = 1500;
+        const positions = new Float32Array(count * 3);
 
-    </section>
-</main>
+        for (let i = 0; i < count * 3; i++) {
+            positions[i] = (Math.random() - 0.5) * 800;
+        }
 
-<!-- 点击查看大图 -->
-<div id="lightbox"><img src=""></div>
+        particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
-<script>
-    // Lightbox
-    const lightbox = document.getElementById("lightbox");
-    const boxImg = lightbox.querySelector("img");
-
-    document.querySelectorAll(".photo-card img").forEach(img => {
-        img.addEventListener("click", () => {
-            boxImg.src = img.src;
-            lightbox.style.display = "flex";
+        const material = new THREE.PointsMaterial({
+            size: 1.2,
+            color: 0x888888,
+            transparent: true,
+            opacity: 0.6
         });
-    });
 
-    lightbox.addEventListener("click", () => lightbox.style.display = "none");
-</script>
+        const starField = new THREE.Points(particles, material);
+        scene.add(starField);
 
-<script src="../js/audio.js"></script>
+        function animate() {
+            starField.rotation.y += 0.0004;
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+    </script>
 
 </body>
+
 </html>
