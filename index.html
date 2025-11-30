@@ -867,20 +867,23 @@
                 </div>
 
                 <div id="walletGrid" class="p-6 grid grid-cols-2 gap-4">
+
                     <button onclick="connectWallet('okx')"
-                        class="group flex flex-col items-center justify-center gap-3 p-4 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-accent-blue transition-all duration-300">
+                        class="group flex flex-col items-center justify-center gap-3 p-4 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-accent-blue transition-all duration-300 cursor-pointer">
                         <div
                             class="w-12 h-12 rounded-xl bg-black border border-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                             <img src="https://comm.okx.com/image/202206/0cf49581-9d22-4a0b-93df-59b2d3989c90.png"
                                 class="w-8 h-8 object-cover">
                         </div>
                         <div class="text-center">
-                            <div class="font-mono text-sm text-white group-hover:text-accent-blue">OKX Wallet</div>
+                            <div class="font-mono text-sm text-white group-hover:text-accent-blue font-bold">OKX Wallet
+                            </div>
+                            <div class="text-[10px] text-accent-blue/80 mt-1 tracking-wider">Recommended</div>
                         </div>
                     </button>
 
                     <button onclick="connectWallet('metamask')"
-                        class="group flex flex-col items-center justify-center gap-3 p-4 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-[#E17726] transition-all duration-300">
+                        class="group flex flex-col items-center justify-center gap-3 p-4 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-[#E17726] transition-all duration-300 cursor-pointer">
                         <div
                             class="w-12 h-12 rounded-xl bg-white flex items-center justify-center group-hover:scale-110 transition-transform">
                             <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3ymr3UNKopfI0NmUY95Dr-0589vG-91KuAA&s"
@@ -888,31 +891,39 @@
                         </div>
                         <div class="text-center">
                             <div class="font-mono text-sm text-white group-hover:text-[#E17726]">MetaMask</div>
+                            <div class="text-[10px] text-dim mt-1">Popular</div>
                         </div>
                     </button>
 
                     <button onclick="connectWallet('wc')"
-                        class="group flex flex-col items-center justify-center gap-3 p-4 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-[#3396FF] transition-all duration-300">
+                        class="group flex flex-col items-center justify-center gap-3 p-4 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-[#3396FF] transition-all duration-300 cursor-pointer">
                         <div
                             class="w-12 h-12 rounded-xl bg-[#3396FF]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                             <i class="ri-qr-code-line text-2xl text-[#3396FF]"></i>
                         </div>
                         <div class="text-center">
                             <div class="font-mono text-sm text-white group-hover:text-[#3396FF]">WalletConnect</div>
+                            <div class="text-[10px] text-dim mt-1">Scan QR Code</div>
                         </div>
                     </button>
 
                     <button onclick="connectWallet('all')"
-                        class="group flex flex-col items-center justify-center gap-3 p-4 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white transition-all duration-300">
+                        class="group flex flex-col items-center justify-center gap-3 p-4 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white transition-all duration-300 cursor-pointer">
                         <div
                             class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                             <i class="ri-apps-line text-2xl text-white"></i>
                         </div>
                         <div class="text-center">
                             <div class="font-mono text-sm text-white">All Wallets</div>
+                            <div class="text-[10px] text-dim mt-1">View More</div>
                         </div>
                     </button>
                 </div>
+
+                <button id="cancelSwitchBtn" onclick="cancelSwitch()"
+                    class="hidden w-full py-3 border-t border-white/10 text-dim hover:text-white transition-colors font-mono text-[10px] tracking-widest uppercase bg-black/50 cursor-pointer">
+                    <i class="ri-arrow-go-back-line mr-1"></i> Cancel / Back to Account
+                </button>
 
                 <div id="connectedView" class="hidden p-6 flex flex-col items-center justify-center gap-6 text-center">
 
@@ -1068,18 +1079,20 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // === F. Web3 Modal & Connection Logic (最终完整版) ===
+        / === F. Web3 Modal & Connection Logic (最终精装修版) ===
         const modal = document.getElementById('walletModal');
         const modalContent = document.getElementById('modalContent');
         const navBtn = document.getElementById('openWalletModalBtn');
         const navWalletText = document.getElementById('navWalletText');
 
-        // === 新增：引用弹窗内的两个视图 ===
+        // 视图引用
         const walletGrid = document.getElementById('walletGrid');
         const connectedView = document.getElementById('connectedView');
+        const disconnectWarningView = document.getElementById('disconnectWarningView'); // 新增
         const fullAddressDisplay = document.getElementById('fullAddressDisplay');
+        const cancelSwitchBtn = document.getElementById('cancelSwitchBtn');
 
-        // 1. 弹窗控制函数
+        // 1. 弹窗控制
         function toggleWalletModal(show) {
             if (show) {
                 modal.classList.remove('hidden');
@@ -1098,122 +1111,107 @@
             }
         }
 
-        // 2. 绑定导航栏按钮点击事件
-        navBtn.addEventListener('click', () => {
-            // 点击总是打开弹窗，显示哪种视图由 handleAccountsChanged 决定
-            toggleWalletModal(true);
-        });
+        navBtn.addEventListener('click', () => toggleWalletModal(true));
 
-        // 3. 连接钱包核心逻辑 (直接跳转版)
+        // 2. 连接逻辑
         async function connectWallet(type) {
-            console.log("正在尝试连接:", type);
-
             if (window.location.protocol === 'file:') {
                 alert("Error: Web3 requires a server environment.");
                 return;
             }
 
             let provider;
-
-            // === OKX 查找逻辑 ===
             if (type === 'okx') {
-                if (typeof window.okxwallet !== 'undefined') {
-                    provider = window.okxwallet;
-                } else if (typeof window.ethereum !== 'undefined' && window.ethereum.isOkxWallet) {
-                    provider = window.ethereum;
-                }
-            }
-            // === MetaMask 查找逻辑 ===
-            else if (type === 'metamask') {
+                if (typeof window.okxwallet !== 'undefined') provider = window.okxwallet;
+                else if (typeof window.ethereum !== 'undefined' && window.ethereum.isOkxWallet) provider = window.ethereum;
+            } else if (type === 'metamask') {
                 if (window.ethereum) {
-                    if (window.ethereum.providers) {
-                        provider = window.ethereum.providers.find(p => p.isMetaMask);
-                    } else if (window.ethereum.isMetaMask && !window.ethereum.isOkxWallet) {
-                        provider = window.ethereum;
-                    } else {
-                        provider = window.ethereum;
-                    }
+                    if (window.ethereum.providers) provider = window.ethereum.providers.find(p => p.isMetaMask);
+                    else if (window.ethereum.isMetaMask && !window.ethereum.isOkxWallet) provider = window.ethereum;
+                    else provider = window.ethereum;
                 }
             } else {
                 alert("Module 'WalletConnect' is loading...");
                 return;
             }
 
-            // === 没找到插件，直接跳转 ===
             if (!provider) {
-                if (type === 'okx') {
-                    window.open('https://www.okx.com/web3', '_blank');
-                } else {
-                    window.open('https://metamask.io/', '_blank');
-                }
+                if (type === 'okx') window.open('[https://www.okx.com/web3](https://www.okx.com/web3)', '_blank');
+                else window.open('[https://metamask.io/](https://metamask.io/)', '_blank');
                 return;
             }
 
-            // === 正常连接 ===
             try {
-                // 注意：这里不要关闭弹窗，因为连接成功后我们会切换视图
                 navWalletText.innerText = "CONNECTING...";
-
                 const accounts = await provider.request({ method: 'eth_requestAccounts' });
                 handleAccountsChanged(accounts);
-
             } catch (error) {
                 console.error("Connection Error:", error);
                 navWalletText.innerText = "CONNECT WALLET";
             }
         }
 
-        // 4. 状态变更处理 (核心逻辑升级：控制视图切换)
+        // 3. 状态管理 (控制3个视图的切换)
         function handleAccountsChanged(accounts) {
             if (accounts && accounts.length > 0) {
-                // === 状态：已连接 ===
+                // === 已连接 ===
                 const account = accounts[0];
-                const shortAddress = `${account.substring(0, 4)}...${account.substring(account.length - 4)}`;
-
-                // 更新导航栏
-                navWalletText.innerText = shortAddress;
+                navWalletText.innerText = `${account.substring(0, 4)}...${account.substring(account.length - 4)}`;
                 navBtn.classList.add("border-accent-blue", "shadow-[0_0_15px_rgba(0,243,255,0.3)]");
                 navBtn.style.backgroundColor = "rgba(0, 243, 255, 0.05)";
 
-                // 更新弹窗视图 -> 显示“详情/退出”页
+                // 显示“详情页”，隐藏其他
                 if (walletGrid) walletGrid.classList.add('hidden');
+                if (disconnectWarningView) disconnectWarningView.classList.add('hidden');
                 if (connectedView) connectedView.classList.remove('hidden');
-                if (fullAddressDisplay) fullAddressDisplay.innerText = account;
 
-                // 连接成功后，如果弹窗还开着，自动关闭（提升体验）
-                // 如果你想让用户看到连接成功的状态，可以把下面这行注释掉
+                if (fullAddressDisplay) fullAddressDisplay.innerText = account;
+                if (cancelSwitchBtn) cancelSwitchBtn.classList.add('hidden'); // 连接成功不需要返回按钮
+
                 toggleWalletModal(false);
 
             } else {
-                // === 状态：未连接 ===
+                // === 未连接 / 重置 ===
                 navWalletText.innerText = "CONNECT WALLET";
                 navBtn.classList.remove("border-accent-blue", "shadow-[0_0_15px_rgba(0,243,255,0.3)]");
                 navBtn.style.backgroundColor = "transparent";
 
-                // 重置弹窗视图 -> 显示“列表”页
+                // 显示“列表页”，隐藏其他
                 if (walletGrid) walletGrid.classList.remove('hidden');
                 if (connectedView) connectedView.classList.add('hidden');
+                if (disconnectWarningView) disconnectWarningView.classList.add('hidden');
+
+                if (cancelSwitchBtn) cancelSwitchBtn.classList.add('hidden');
             }
         }
 
-        // 5. 断开连接 (Exit)
+        // 4. 点击退出 (Exit) -> 切换到警告页
         function disconnectWallet() {
-            handleAccountsChanged([]); // 清除前端状态
-            toggleWalletModal(false);  // 关闭弹窗
+            // 不直接断开，而是切换视图
+            connectedView.classList.add('hidden');
+            disconnectWarningView.classList.remove('hidden');
+        }
 
-            setTimeout(() => {
-                alert("已断开网页连接。\n\n⚠️ 安全提示：\n请务必去您的钱包插件(如MetaMask)里手动取消授权。");
-            }, 300);
+        // 5. 确认断开 (I Understand) -> 真正断开
+        function confirmDisconnect() {
+            handleAccountsChanged([]); // 清除状态
+            toggleWalletModal(false);  // 关闭弹窗
         }
 
         // 6. 切换钱包 (Switch)
         function switchWallet() {
-            // 隐藏详情页，显示列表页，让用户重选
             connectedView.classList.add('hidden');
             walletGrid.classList.remove('hidden');
+            if (cancelSwitchBtn) cancelSwitchBtn.classList.remove('hidden');
         }
 
-        // 自动重连检测
+        // 7. 取消切换 (Back)
+        function cancelSwitch() {
+            walletGrid.classList.add('hidden');
+            connectedView.classList.remove('hidden');
+            if (cancelSwitchBtn) cancelSwitchBtn.classList.add('hidden');
+        }
+
         window.addEventListener('load', () => {
             if (window.ethereum) {
                 window.ethereum.request({ method: 'eth_accounts' })
@@ -1221,7 +1219,6 @@
                     .catch(console.error);
             }
         });
-
     </script>
 </body>
 
