@@ -816,11 +816,87 @@
 
                 <div class="space-y-6">
                     <h3 class="font-serif text-xl text-gray-400" data-i18n="nexus.fuel">FUEL THE SHIP</h3>
-                    <a href="https://buymeacoffee.com/booyuu" target="_blank"
-                        class="btn-astral inline-block border-tech-red text-tech-red hover:bg-tech-red hover:text-white pointer-events-auto"
-                        data-i18n="btn.sponsor">
-                        <i class="ri-cup-line mr-2"></i> Buy me a coffee
-                    </a>
+                    <div
+                        class="mt-8 bg-white/5 border border-white/10 backdrop-blur-md max-w-md mx-auto overflow-hidden relative group">
+
+                        <div
+                            class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-accent-blue to-transparent opacity-50">
+                        </div>
+
+                        <div class="flex border-b border-white/10">
+                            <button onclick="switchPayChannel('global')" id="tab-global"
+                                class="pay-tab flex-1 py-3 text-[10px] font-mono tracking-widest hover:bg-white/5 transition-colors text-accent-blue border-b-2 border-accent-blue">
+                                GLOBAL
+                            </button>
+                            <button onclick="switchPayChannel('cn')" id="tab-cn"
+                                class="pay-tab flex-1 py-3 text-[10px] font-mono tracking-widest hover:bg-white/5 transition-colors text-dim border-b-2 border-transparent">
+                                CN-NODE
+                            </button>
+                            <button onclick="switchPayChannel('crypto')" id="tab-crypto"
+                                class="pay-tab flex-1 py-3 text-[10px] font-mono tracking-widest hover:bg-white/5 transition-colors text-dim border-b-2 border-transparent">
+                                WEB3
+                            </button>
+                        </div>
+
+                        <div class="p-6 min-h-[160px] flex flex-col justify-center">
+
+                            <div id="panel-global" class="pay-panel text-center space-y-5 animate-fade-in">
+                                <div class="flex justify-center items-center gap-3">
+                                    <i class="ri-cup-line text-2xl text-[#FFDD00]"></i>
+                                    <span class="font-serif text-lg text-white tracking-widest">COFFEE FUEL</span>
+                                </div>
+
+                                <div class="w-12 h-[1px] bg-white/20 mx-auto"></div>
+
+                                <a href="https://buymeacoffee.com/booyuu" target="_blank"
+                                    class="btn-astral inline-block w-full border-white/20 hover:border-[#FFDD00] hover:text-[#FFDD00] text-xs">
+                                    INITIATE UPLINK <i class="ri-arrow-right-up-line ml-1"></i>
+                                </a>
+                            </div>
+
+                            <div id="panel-cn" class="pay-panel hidden text-center space-y-5 animate-fade-in">
+                                <div class="flex justify-center items-center gap-3">
+                                    <i class="ri-flashlight-line text-2xl text-[#946CE6]"></i>
+                                    <span class="font-serif text-lg text-white tracking-widest">POWER CELL</span>
+                                </div>
+
+                                <div class="w-12 h-[1px] bg-white/20 mx-auto"></div>
+
+                                <a href="https://afdian.com/a/YOUR_ID" target="_blank"
+                                    class="btn-astral inline-block w-full border-white/20 hover:border-[#946CE6] hover:text-[#946CE6] text-xs">
+                                    CONNECT NODE <i class="ri-arrow-right-up-line ml-1"></i>
+                                </a>
+                            </div>
+
+                            <div id="panel-crypto" class="pay-panel hidden space-y-4 animate-fade-in">
+                                <div class="flex justify-between items-center text-[10px] text-dim font-mono">
+                                    <span>ETHER TRANSFER</span>
+                                    <span class="text-accent-blue animate-pulse">● NETWORK ACTIVE</span>
+                                </div>
+
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button onclick="selectTipAmount(0.001)"
+                                        class="tip-btn border border-white/20 hover:border-accent-blue hover:text-white py-2 text-[10px] font-mono transition-all text-dim">0.001</button>
+                                    <button onclick="selectTipAmount(0.005)"
+                                        class="tip-btn border border-white/20 hover:border-accent-blue hover:text-white py-2 text-[10px] font-mono transition-all text-dim">0.005</button>
+                                    <button onclick="selectTipAmount(0.01)"
+                                        class="tip-btn border border-white/20 hover:border-accent-blue hover:text-white py-2 text-[10px] font-mono transition-all text-dim">0.01</button>
+                                </div>
+
+                                <div class="flex gap-2">
+                                    <input type="number" id="customTipInput" step="0.001" placeholder="ETH AMOUNT"
+                                        class="w-full bg-white/5 border border-white/10 px-3 py-2 text-xs font-mono text-white focus:border-accent-blue outline-none transition-colors placeholder-dim">
+                                    <button onclick="sendTip()"
+                                        class="bg-white/10 border border-white/10 text-accent-blue px-4 py-2 font-bold text-xs hover:bg-accent-blue hover:text-black hover:border-accent-blue transition-all">
+                                        SEND
+                                    </button>
+                                </div>
+                                <p id="tipStatus" class="text-[9px] text-center text-dim min-h-[14px]"></p>
+                            </div>
+
+                        </div>
+                    </div>
+                
                 </div>
 
                 <div class="grid md:grid-cols-3 gap-8 font-mono text-xs tracking-widest pt-12 border-t border-white/10">
