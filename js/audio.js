@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // === ⚡️ 自动注入播放器 HTML (插座模式 - 纯净版) ===
     function injectAudioPlayer() {
         const slot = document.getElementById('audio-slot');
-        if (!slot) return; 
+        if (!slot) return;
 
         // 🔴 之前的代码里这里多写了一个 div class="h-4..." 分割线，现在删掉了
         // ✅ 现在只注入播放器本身，不带分割线，不带额外的 flex 容器
@@ -79,31 +79,43 @@ document.addEventListener("DOMContentLoaded", () => {
         const savedTime = localStorage.getItem('audio_time');
         const savedPlaying = localStorage.getItem('audio_playing') === 'true';
 
+        // 1. 恢复曲目
         if (savedIndex !== null) {
             currentTrackIndex = parseInt(savedIndex);
             audio.src = pathPrefix + playlist[currentTrackIndex].src;
-            const restoreTime = parseFloat(savedTime || 0);
-            if (restoreTime > 0 && isFinite(restoreTime)) audio.currentTime = restoreTime;
         } else {
             audio.src = pathPrefix + playlist[0].src;
         }
 
+        // 2. 恢复时间
+        const restoreTime = parseFloat(savedTime);
+        if (!isNaN(restoreTime) && restoreTime > 0) {
+            audio.currentTime = restoreTime;
+        }
+
+        // 3. 渲染 UI
         renderPlaylist();
 
-        if (savedIndex !== null) { // 只要有记忆就尝试恢复
-            updateUIState(true);
-            // 尝试自动播放
+        // 4. 根据 pause/play 状态决定行为
+        if (savedPlaying) {
+            // === 上一页在播放 → 自动播放 ===
             const playPromise = audio.play();
             if (playPromise !== undefined) {
                 playPromise.catch(() => {
-                    console.log("Autoplay blocked.");
-                    const resume = () => { audio.play(); removeListeners(); };
-                    const removeListeners = () => ['click', 'keydown', 'wheel', 'touchstart'].forEach(e => document.removeEventListener(e, resume));
-                    ['click', 'keydown', 'wheel', 'touchstart'].forEach(e => document.addEventListener(e, resume, { once: true }));
+                    // 自动播放被阻止，在任意交互后恢复
+                    const resume = () => { audio.play(); remove(); };
+                    const remove = () => ['click', 'keydown', 'wheel', 'touchstart']
+                        .forEach(e => document.removeEventListener(e, resume));
+                    ['click', 'keydown', 'wheel', 'touchstart']
+                        .forEach(e => document.addEventListener(e, resume, { once: true }));
                 });
             }
+            updateUIState(true);
+
         } else {
+            // === 上一页是暂停 → 只恢复 UI，不播放 ===
             updateUIState(false);
+            audio.pause();
         }
     }
 
