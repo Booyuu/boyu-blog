@@ -896,7 +896,7 @@
 
                         </div>
                     </div>
-                
+
                 </div>
 
                 <div class="grid md:grid-cols-3 gap-8 font-mono text-xs tracking-widest pt-12 border-t border-white/10">
@@ -1378,6 +1378,43 @@
                 });
             }
         });
+
+        // === H. 打赏面板切换逻辑 (修复版) ===
+        function switchPayChannel(channel) {
+            // 1. 重置所有 Tab 的样式 (变暗)
+            document.querySelectorAll('.pay-tab').forEach(el => {
+                el.classList.remove('text-accent-blue', 'border-accent-blue');
+                el.classList.add('text-dim', 'border-transparent');
+            });
+
+            // 2. 激活当前点击的 Tab (变亮)
+            const activeTab = document.getElementById(`tab-${channel}`);
+            if (activeTab) {
+                activeTab.classList.remove('text-dim', 'border-transparent');
+                activeTab.classList.add('text-accent-blue', 'border-accent-blue');
+            }
+
+            // 3. 隐藏所有面板内容
+            document.querySelectorAll('.pay-panel').forEach(el => el.classList.add('hidden'));
+
+            // 4. 显示当前选中的面板
+            const activePanel = document.getElementById(`panel-${channel}`);
+            if (activePanel) {
+                activePanel.classList.remove('hidden');
+                // 加一个小动画
+                activePanel.style.opacity = 0;
+                setTimeout(() => activePanel.style.opacity = 1, 50);
+            }
+        }
+
+        // === I. 打赏金额选择逻辑 ===
+        function selectTipAmount(amount) {
+            const input = document.getElementById('customTipInput');
+            if (input) input.value = amount;
+        }
+
+        // === J. 发送打赏 (Web3) ===
+        // ⚠️ 请确保你的 sendTip 函数也在代码里，如果没有，请告诉我，我再发你一次
 
     </script>
 </body>
