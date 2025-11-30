@@ -1103,7 +1103,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // === F. Web3 Modal & Connection Logic (最终精装修版) ===
+        // === F. Web3 Modal & Connection Logic (最终修正版) ===
         const modal = document.getElementById('walletModal');
         const modalContent = document.getElementById('modalContent');
         const navBtn = document.getElementById('openWalletModalBtn');
@@ -1112,7 +1112,7 @@
         // 视图引用
         const walletGrid = document.getElementById('walletGrid');
         const connectedView = document.getElementById('connectedView');
-        const disconnectWarningView = document.getElementById('disconnectWarningView'); // 新增
+        const disconnectWarningView = document.getElementById('disconnectWarningView');
         const fullAddressDisplay = document.getElementById('fullAddressDisplay');
         const cancelSwitchBtn = document.getElementById('cancelSwitchBtn');
 
@@ -1137,34 +1137,51 @@
 
         navBtn.addEventListener('click', () => toggleWalletModal(true));
 
-        // 2. 连接逻辑
+        // 2. 连接逻辑 (修复 OKX 跳转)
         async function connectWallet(type) {
             if (window.location.protocol === 'file:') {
                 alert("Error: Web3 requires a server environment.");
                 return;
             }
 
-            let provider;
+            let provider = null;
+
+            // === OKX 查找逻辑 ===
             if (type === 'okx') {
-                if (typeof window.okxwallet !== 'undefined') provider = window.okxwallet;
-                else if (typeof window.ethereum !== 'undefined' && window.ethereum.isOkxWallet) provider = window.ethereum;
-            } else if (type === 'metamask') {
+                if (typeof window.okxwallet !== 'undefined') {
+                    provider = window.okxwallet;
+                } else if (typeof window.ethereum !== 'undefined' && window.ethereum.isOkxWallet) {
+                    provider = window.ethereum;
+                }
+            } 
+            // === MetaMask 查找逻辑 ===
+            else if (type === 'metamask') {
                 if (window.ethereum) {
-                    if (window.ethereum.providers) provider = window.ethereum.providers.find(p => p.isMetaMask);
-                    else if (window.ethereum.isMetaMask && !window.ethereum.isOkxWallet) provider = window.ethereum;
-                    else provider = window.ethereum;
+                    if (window.ethereum.providers) {
+                        provider = window.ethereum.providers.find(p => p.isMetaMask);
+                    } else if (window.ethereum.isMetaMask && !window.ethereum.isOkxWallet) {
+                        provider = window.ethereum;
+                    } else {
+                        provider = window.ethereum;
+                    }
                 }
             } else {
                 alert("Module 'WalletConnect' is loading...");
                 return;
             }
 
+            // === 没找到插件，直接跳转 (修复点：确保 provider 为 null 时一定触发) ===
             if (!provider) {
-                if (type === 'okx') window.open('[https://www.okx.com/web3](https://www.okx.com/web3)', '_blank');
-                else window.open('[https://metamask.io/](https://metamask.io/)', '_blank');
+                console.log("未检测到插件，准备跳转...");
+                if (type === 'okx') {
+                    window.open('https://www.okx.com/web3', '_blank');
+                } else {
+                    window.open('https://metamask.io/', '_blank');
+                }
                 return;
             }
 
+            // === 正常连接 ===
             try {
                 navWalletText.innerText = "CONNECTING...";
                 const accounts = await provider.request({ method: 'eth_requestAccounts' });
@@ -1175,7 +1192,7 @@
             }
         }
 
-        // 3. 状态管理 (控制3个视图的切换)
+        // 3. 状态管理
         function handleAccountsChanged(accounts) {
             if (accounts && accounts.length > 0) {
                 // === 已连接 ===
@@ -1184,52 +1201,55 @@
                 navBtn.classList.add("border-accent-blue", "shadow-[0_0_15px_rgba(0,243,255,0.3)]");
                 navBtn.style.backgroundColor = "rgba(0, 243, 255, 0.05)";
 
-                // 显示“详情页”，隐藏其他
+                // 切换到详情页
                 if (walletGrid) walletGrid.classList.add('hidden');
                 if (disconnectWarningView) disconnectWarningView.classList.add('hidden');
                 if (connectedView) connectedView.classList.remove('hidden');
-
+                
                 if (fullAddressDisplay) fullAddressDisplay.innerText = account;
-                if (cancelSwitchBtn) cancelSwitchBtn.classList.add('hidden'); // 连接成功不需要返回按钮
+                if (cancelSwitchBtn) cancelSwitchBtn.classList.add('hidden');
 
                 toggleWalletModal(false);
 
             } else {
-                // === 未连接 / 重置 ===
+                // === 未连接 ===
                 navWalletText.innerText = "CONNECT WALLET";
                 navBtn.classList.remove("border-accent-blue", "shadow-[0_0_15px_rgba(0,243,255,0.3)]");
                 navBtn.style.backgroundColor = "transparent";
 
-                // 显示“列表页”，隐藏其他
+                // 切换回列表页
                 if (walletGrid) walletGrid.classList.remove('hidden');
                 if (connectedView) connectedView.classList.add('hidden');
                 if (disconnectWarningView) disconnectWarningView.classList.add('hidden');
-
                 if (cancelSwitchBtn) cancelSwitchBtn.classList.add('hidden');
             }
         }
 
-        // 4. 点击退出 (Exit) -> 切换到警告页
+        // 4. 点击退出 -> 警告页
         function disconnectWallet() {
-            // 不直接断开，而是切换视图
             connectedView.classList.add('hidden');
             disconnectWarningView.classList.remove('hidden');
         }
 
-        // 5. 确认断开 (I Understand) -> 真正断开
+        // 5. 确认断开 (修复闪烁问题)
         function confirmDisconnect() {
-            handleAccountsChanged([]); // 清除状态
-            toggleWalletModal(false);  // 关闭弹窗
+            // 步骤 A: 先关掉弹窗 (让用户看不到背后的变化)
+            toggleWalletModal(false);
+
+            // 步骤 B: 等动画播完 (300ms) 再重置状态
+            setTimeout(() => {
+                handleAccountsChanged([]); 
+            }, 300);
         }
 
-        // 6. 切换钱包 (Switch)
+        // 6. 切换钱包
         function switchWallet() {
             connectedView.classList.add('hidden');
             walletGrid.classList.remove('hidden');
             if (cancelSwitchBtn) cancelSwitchBtn.classList.remove('hidden');
         }
 
-        // 7. 取消切换 (Back)
+        // 7. 取消切换
         function cancelSwitch() {
             walletGrid.classList.add('hidden');
             connectedView.classList.remove('hidden');
@@ -1243,6 +1263,7 @@
                     .catch(console.error);
             }
         });
+        
     </script>
 </body>
 
