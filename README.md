@@ -41,18 +41,6 @@ This project is not just a static site; it's a showcase of modern Web3 interacti
 * **Animation:** GSAP, Three.js, Lenis (Smooth Scroll)
 * **Hosting:** GitHub Pages & Custom Domain
 
-## 🚀 Local Development
-
-1.  **Clone the repository**
-    ```bash
-    git clone [https://github.com/Booyuu/Booyuu.github.io.git](https://github.com/Booyuu/Booyuu.github.io.git)
-    ```
-
-2.  **Run locally**
-    Since this project uses Web3 injections, please use a local server (e.g., VS Code "Live Server"):
-    * Open `index.html` with Live Server.
-    * Access via `http://127.0.0.1:5500`.
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
