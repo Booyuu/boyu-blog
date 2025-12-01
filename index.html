@@ -956,7 +956,7 @@
 
                                 <div class="w-12 h-[1px] bg-white/20 mx-auto"></div>
 
-                                <a href="https://afdian.com/a/YOUR_ID" target="_blank"
+                                <a href="https://afdian.com/a/fuel_the_ship" target="_blank"
                                     class="btn-astral inline-block w-full border-white/20 hover:border-[#946CE6] hover:text-[#946CE6] text-xs">
                                     CONNECT NODE <i class="ri-arrow-right-up-line ml-1"></i>
                                 </a>
@@ -1965,6 +1965,16 @@
             if (layer) layer.classList.add('flex');
             console.log("Neural Link Severed.");
         });
+
+        // === Mobile Menu Logic ===
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu-overlay');
+            if (menu.classList.contains('translate-x-full')) {
+                menu.classList.remove('translate-x-full'); // 显示 (滑入)
+            } else {
+                menu.classList.add('translate-x-full');    // 隐藏 (滑出)
+            }
+        }
     </script>
 </body>
 
