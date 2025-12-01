@@ -482,6 +482,15 @@
 
 <body>
 
+    <div id="offline-layer"
+        class="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md hidden flex-col items-center justify-center text-center">
+        <div class="border border-red-500/50 p-8 bg-red-900/10 animate-pulse">
+            <i class="ri-wifi-off-line text-6xl text-red-500 mb-4 block"></i>
+            <h2 class="text-2xl text-red-500 font-mono tracking-widest mb-2">CONNECTION SEVERED</h2>
+            <p class="text-red-300/70 text-xs font-mono">NEURAL LINK OFFLINE. RECONNECTING...</p>
+        </div>
+    </div>
+
     <div id="preloader">
         <div class="loader-text">INITIALIZING... <span id="loading-percent">0</span>%</div>
         <div class="loader-bar">
@@ -1911,6 +1920,21 @@
                     updateNetworkUI(chainId);
                 });
             }
+        });
+
+        // === Z. 网络状态监听 (Offline Detection) ===
+        window.addEventListener('online', () => {
+            const layer = document.getElementById('offline-layer');
+            if (layer) layer.classList.add('hidden');
+            if (layer) layer.classList.remove('flex');
+            console.log("Neural Link Restored.");
+        });
+
+        window.addEventListener('offline', () => {
+            const layer = document.getElementById('offline-layer');
+            if (layer) layer.classList.remove('hidden');
+            if (layer) layer.classList.add('flex');
+            console.log("Neural Link Severed.");
         });
     </script>
 </body>
