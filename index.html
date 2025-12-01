@@ -620,36 +620,6 @@
             </button>
         </div>
 
-        <div id="mobile-menu-overlay"
-            class="fixed inset-0 bg-[#050505] z-[100] transform translate-x-full transition-transform duration-300 flex flex-col justify-center items-center gap-8 pointer-events-auto md:hidden mix-blend-normal">
-
-            <button onclick="toggleMobileMenu()" class="absolute top-6 right-6 text-dim hover:text-white p-4">
-                <i class="ri-close-line text-3xl"></i>
-            </button>
-
-            <a href="#about" onclick="toggleMobileMenu()" class="text-2xl font-serif text-white tracking-widest"
-                data-i18n="nav.about">ABOUT</a>
-            <a href="#projects" onclick="toggleMobileMenu()" class="text-2xl font-serif text-white tracking-widest"
-                data-i18n="nav.projects">PROJECTS</a>
-            <a href="blog/blog.html" onclick="toggleMobileMenu()" class="text-2xl font-serif text-white tracking-widest"
-                data-i18n="nav.blog">BLOG</a>
-
-            <a href="blog/photos.html" onclick="toggleMobileMenu()"
-                class="text-sm font-mono text-dim tracking-widest border-b border-white/20 pb-1">// VISUAL LOGS</a>
-
-            <div class="w-12 h-[1px] bg-white/20 my-4"></div>
-
-            <button onclick="toggleWalletModal(true); toggleMobileMenu();"
-                class="border border-accent-blue px-8 py-3 text-accent-blue font-mono text-sm tracking-widest flex items-center gap-2">
-                <i class="ri-wallet-3-line"></i> CONNECT WALLET
-            </button>
-
-            <a href="#nexus" onclick="toggleMobileMenu()"
-                class="text-dim text-xs font-mono mt-8 flex items-center gap-2">
-                <i class="ri-flashlight-line"></i> FUEL THE SHIP
-            </a>
-        </div>
-
     </nav>
 
     <main>
@@ -1016,6 +986,30 @@
         </section>
 
     </main>
+
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-[#050505] z-[9999] transform translate-x-full transition-transform duration-300 flex flex-col justify-center items-center gap-8 md:hidden">
+        
+        <button onclick="toggleMobileMenu()" class="absolute top-6 right-6 text-dim hover:text-white p-4">
+            <i class="ri-close-line text-3xl"></i>
+        </button>
+
+        <a href="#about" onclick="toggleMobileMenu()" class="text-2xl font-serif text-white tracking-widest">ABOUT</a>
+        <a href="#projects" onclick="toggleMobileMenu()" class="text-2xl font-serif text-white tracking-widest">PROJECTS</a>
+        <a href="blog/blog.html" onclick="toggleMobileMenu()" class="text-2xl font-serif text-white tracking-widest">BLOG</a>
+        
+        <a href="blog/photos.html" onclick="toggleMobileMenu()" class="text-sm font-mono text-dim tracking-widest border-b border-white/20 pb-1">// VISUAL LOGS</a>
+
+        <div class="w-12 h-[1px] bg-white/20 my-4"></div>
+
+        <button onclick="toggleWalletModal(true); toggleMobileMenu();" class="border border-accent-blue px-8 py-3 text-accent-blue font-mono text-sm tracking-widest flex items-center gap-2">
+            <i class="ri-wallet-3-line"></i> CONNECT WALLET
+        </button>
+
+        <a href="#nexus" onclick="toggleMobileMenu()" class="text-dim text-xs font-mono mt-8 flex items-center gap-2">
+            <i class="ri-flashlight-line"></i> FUEL THE SHIP
+        </a>
+    </div>
+
 
     <div id="walletModal" class="fixed inset-0 z-[100] hidden opacity-0 transition-opacity duration-300">
 
