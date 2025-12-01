@@ -1,24 +1,22 @@
-// === BOYU | 星际音频核心 V9.0 (组件化版) ===
+// === BOYU | 星际音频核心 V9.1 (手机端适配版) ===
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    // 1. 智能路径修正
+    // 1. 智能路径修正 (兼容子页面)
     const path = window.location.pathname;
     const subFolders = ['/blog/', '/travel/', '/media/'];
     const isSubPage = subFolders.some(folder => path.includes(folder));
     const pathPrefix = isSubPage ? '../' : '';
 
-    // === ⚡️ 自动注入播放器 HTML (插座模式 - 纯净版) ===
+    // === ⚡️ 自动注入播放器 HTML ===
     function injectAudioPlayer() {
         const slot = document.getElementById('audio-slot');
         if (!slot) return;
 
-        // 🔴 之前的代码里这里多写了一个 div class="h-4..." 分割线，现在删掉了
-        // ✅ 现在只注入播放器本身，不带分割线，不带额外的 flex 容器
         slot.innerHTML = `
             <div class="relative group font-mono" id="audio-console">
                 <div class="relative">
-                    <button id="music-trigger" class="flex items-center gap-3 opacity-80 hover:opacity-100 transition-opacity cursor-pointer" onclick="window.toggleMainPlayback()">
+                    <button id="music-trigger" class="flex items-center gap-3 opacity-80 hover:opacity-100 transition-opacity cursor-pointer pointer-events-auto" onclick="window.toggleMainPlayback()">
                         <div class="flex items-end gap-[2px] h-3" id="master-wave">
                             <div class="wave-bar w-[2px] h-1 bg-white"></div>
                             <div class="wave-bar w-[2px] h-2 bg-white"></div>
@@ -50,8 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     injectAudioPlayer();
 
-    // --- 以下逻辑保持不变 ---
-
+    // --- 播放列表 (确保 mp3 文件存在) ---
     const playlist = [
         { title: "Saman", artist: "Ólafur Arnalds", src: "assets/Saman.mp3" },
         { title: "Oceans", artist: "Ólafur Arnalds", src: "assets/Oceans.mp3" },
@@ -60,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ];
 
     const audio = document.getElementById('global-audio');
-    if (!audio) return; // 安全检查
+    if (!audio) return; 
 
     const masterWave = document.getElementById('master-wave');
     const trackNameDisplay = document.getElementById('current-track-name');
@@ -73,13 +70,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let isDragging = false;
     audio.volume = 0.5;
 
-    // === 记忆恢复 ===
+    // === 初始化状态 ===
     function initAudioState() {
         const savedIndex = localStorage.getItem('audio_index');
         const savedTime = localStorage.getItem('audio_time');
         const savedPlaying = localStorage.getItem('audio_playing') === 'true';
 
-        // 1. 恢复曲目
         if (savedIndex !== null) {
             currentTrackIndex = parseInt(savedIndex);
             audio.src = pathPrefix + playlist[currentTrackIndex].src;
@@ -87,46 +83,34 @@ document.addEventListener("DOMContentLoaded", () => {
             audio.src = pathPrefix + playlist[0].src;
         }
 
-        // 2. 恢复时间
-        const restoreTime = parseFloat(savedTime);
-        if (!isNaN(restoreTime) && restoreTime > 0) {
-            audio.currentTime = restoreTime;
-        }
+        if (savedTime) audio.currentTime = parseFloat(savedTime);
 
-        // 3. 渲染 UI
         renderPlaylist();
 
-        // 4. 根据 pause/play 状态决定行为
+        // 尝试恢复播放 (如果之前在放)
         if (savedPlaying) {
-            // === 上一页在播放 → 自动播放 ===
             const playPromise = audio.play();
             if (playPromise !== undefined) {
-                playPromise.catch(() => {
-                    // 自动播放被阻止，在任意交互后恢复
-                    const resume = () => { audio.play(); remove(); };
-                    const remove = () => ['click', 'keydown', 'wheel', 'touchstart']
-                        .forEach(e => document.removeEventListener(e, resume));
-                    ['click', 'keydown', 'wheel', 'touchstart']
-                        .forEach(e => document.addEventListener(e, resume, { once: true }));
+                playPromise.then(() => {
+                    updateUIState(true);
+                }).catch(() => {
+                    // 如果自动播放失败（手机端常态），静默暂停，等待用户点击
+                    console.log("Auto-play blocked by browser policy.");
+                    updateUIState(false);
                 });
             }
-            updateUIState(true);
-
         } else {
-            // === 上一页是暂停 → 只恢复 UI，不播放 ===
             updateUIState(false);
-            audio.pause();
         }
     }
 
     window.addEventListener('pagehide', () => {
         localStorage.setItem('audio_index', currentTrackIndex);
         localStorage.setItem('audio_time', audio.currentTime);
-        const isPlaying = !audio.paused || (masterWave && masterWave.classList.contains('playing'));
-        localStorage.setItem('audio_playing', isPlaying);
+        localStorage.setItem('audio_playing', !audio.paused);
     });
 
-    // === 控制逻辑 ===
+    // === 渲染播放列表 ===
     function renderPlaylist() {
         if (!playlistContainer) return;
         playlistContainer.innerHTML = '';
@@ -150,10 +134,28 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => updateUIState(!audio.paused), 50);
     }
 
+    // === 核心播放控制 (包含手机端修复) ===
     window.toggleMainPlayback = function () {
         if (audio.paused) {
-            if (!audio.src || audio.src === window.location.href) audio.src = pathPrefix + playlist[currentTrackIndex].src;
-            audio.play().then(() => updateUIState(true));
+            // 给用户一个正在加载的反馈
+            if(trackNameDisplay) trackNameDisplay.innerText = "LOADING...";
+            
+            // 确保有音频源
+            if (!audio.src || audio.src === window.location.href) {
+                audio.src = pathPrefix + playlist[currentTrackIndex].src;
+            }
+
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    updateUIState(true);
+                }).catch(error => {
+                    console.error("Play error:", error);
+                    if(trackNameDisplay) trackNameDisplay.innerText = "TAP TO PLAY";
+                    // 手机端常见错误：用户没交互
+                    alert("Audio Blocked: Please interact with the page or check mute switch.");
+                });
+            }
         } else {
             audio.pause();
             updateUIState(false);
@@ -162,31 +164,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.playTrack = function (index) {
         if (currentTrackIndex === index && !audio.paused) {
-            audio.pause(); updateUIState(false);
+            audio.pause(); 
+            updateUIState(false);
         } else {
+            if(trackNameDisplay) trackNameDisplay.innerText = "LOADING...";
             currentTrackIndex = index;
             audio.src = pathPrefix + playlist[index].src;
-            audio.play().then(() => updateUIState(true));
+            audio.play().then(() => updateUIState(true)).catch(console.error);
         }
     };
 
+    // === UI 状态更新 ===
     function updateUIState(isPlaying) {
         const track = playlist[currentTrackIndex];
-        if (trackNameDisplay) trackNameDisplay.innerHTML = isPlaying ? `<span class="text-accent-blue">PLAYING:</span> ${track.title.toUpperCase()}` : "AUDIO PAUSED";
+        
+        // 更新文字
+        if (trackNameDisplay) {
+            trackNameDisplay.innerHTML = isPlaying 
+                ? `<span class="text-accent-blue">PLAYING:</span> ${track.title.toUpperCase()}` 
+                : "AUDIO PAUSED";
+        }
 
+        // 更新波形动画
         if (masterWave) {
             if (isPlaying) {
                 masterWave.classList.add('playing');
-                masterWave.innerHTML = `<div class="wave-bar w-[2px] h-1 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate]"></div><div class="wave-bar w-[2px] h-2 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.1s]"></div><div class="wave-bar w-[2px] h-1.5 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.2s]"></div><div class="wave-bar w-[2px] h-3 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.3s]"></div>`;
+                // 动态波形
+                masterWave.innerHTML = `
+                    <div class="wave-bar w-[2px] h-1 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate]"></div>
+                    <div class="wave-bar w-[2px] h-2 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.1s]"></div>
+                    <div class="wave-bar w-[2px] h-1.5 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.2s]"></div>
+                    <div class="wave-bar w-[2px] h-3 bg-accent-blue animate-[sound-wave_0.8s_infinite_alternate_0.3s]"></div>
+                `;
             } else {
                 masterWave.classList.remove('playing');
-                masterWave.innerHTML = `<div class="wave-bar w-[2px] h-1 bg-white"></div><div class="wave-bar w-[2px] h-2 bg-white"></div><div class="wave-bar w-[2px] h-1.5 bg-white"></div><div class="wave-bar w-[2px] h-3 bg-white"></div>`;
+                // 静态白条
+                masterWave.innerHTML = `
+                    <div class="wave-bar w-[2px] h-1 bg-white"></div>
+                    <div class="wave-bar w-[2px] h-2 bg-white"></div>
+                    <div class="wave-bar w-[2px] h-1.5 bg-white"></div>
+                    <div class="wave-bar w-[2px] h-3 bg-white"></div>
+                `;
             }
         }
 
-        if (timeDisplay && isPlaying) timeDisplay.classList.remove('hidden');
-        if (progressContainer && isPlaying) progressContainer.classList.remove('hidden');
+        // 显隐进度条
+        if (timeDisplay) {
+            isPlaying ? timeDisplay.classList.remove('hidden') : timeDisplay.classList.add('hidden');
+        }
+        if (progressContainer) {
+            isPlaying ? progressContainer.classList.remove('hidden') : progressContainer.classList.add('hidden');
+        }
 
+        // 更新列表选中状态
         document.querySelectorAll('.track-item').forEach((item, index) => {
             const title = item.querySelector('.track-title');
             const iconBox = item.querySelector('.icon-box');
@@ -203,6 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // === 进度条逻辑 ===
     function formatTime(s) { return isNaN(s) ? "0:00" : Math.floor(s / 60) + ":" + (Math.floor(s % 60) < 10 ? '0' : '') + Math.floor(s % 60); }
 
     audio.addEventListener('timeupdate', () => {
@@ -236,6 +267,6 @@ document.addEventListener("DOMContentLoaded", () => {
         window.playTrack(next);
     });
 
+    // 启动！
     initAudioState();
 });
-
