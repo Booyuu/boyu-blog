@@ -496,6 +496,36 @@
                 height: 12px;
             }
         }
+
+        /* 🔴 心跳指示灯 */
+        .red-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: rgba(255, 50, 50, 0.9);
+            border-radius: 50%;
+            margin-right: 8px;
+
+            /* 心跳动画 */
+            animation: heartbeat 1.4s infinite ease-in-out;
+        }
+
+        @keyframes heartbeat {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.4;
+            }
+
+            40% {
+                transform: scale(1.4);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.8);
+                opacity: 0.4;
+            }
+        }
     </style>
 </head>
 
@@ -647,12 +677,8 @@
             <div class="text-center space-y-2">
                 <div class="data-pill text-white border-white/40 animate-pulse mb-8 pointer-events-auto"
                     data-i18n="hero.status">
-                    <div class="flex items-center gap-2 px-4 py-1 
-                                border border-accent-blue/40 
-                                bg-black/40 backdrop-blur-sm
-                                rounded-sm
-                                font-mono text-[12px] md:text-[14px] tracking-[0.25em] text-accent-blue">
-                        <span class="w-2 h-2 bg-accent-blue rounded-full animate-pulse"></span>
+                    <div class="status-tag">
+                        <span class="red-dot"></span>
                         SYSTEM ACTIVE
                     </div>
                 </div>
