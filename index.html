@@ -978,30 +978,38 @@
                     <div class="text-dim">SINGAPORE / EARTH</div>
                 </div>
 
-                <div class="pt-8">
-                    <h2 class="font-serif text-[12vw] leading-none text-white/10 select-none">深藏若虚</h2>
-                    <p class="font-mono text-[10px] text-dim mt-8">© 2025 ALL RIGHTS RESERVED.</p>
-                </div>
+                <h2 class="font-serif leading-none text-white/10 select-none 
+           text-[12vw] md:text-[8vw] lg:text-[6vw]">
+                    深藏若虚
+                </h2>
+                <p class="font-mono text-[10px] text-dim mt-8">
+                    © 2025 ALL RIGHTS RESERVED.
+                </p>
             </div>
         </section>
 
     </main>
 
-    <div id="mobile-menu-overlay" class="fixed inset-0 bg-[#050505] z-[9999] transform translate-x-full transition-transform duration-300 flex flex-col justify-center items-center gap-8 md:hidden">
-        
+    <div id="mobile-menu-overlay"
+        class="fixed inset-0 bg-[#050505] z-[9999] transform translate-x-full transition-transform duration-300 flex flex-col justify-center items-center gap-8 md:hidden">
+
         <button onclick="toggleMobileMenu()" class="absolute top-6 right-6 text-dim hover:text-white p-4">
             <i class="ri-close-line text-3xl"></i>
         </button>
 
         <a href="#about" onclick="toggleMobileMenu()" class="text-2xl font-serif text-white tracking-widest">ABOUT</a>
-        <a href="#projects" onclick="toggleMobileMenu()" class="text-2xl font-serif text-white tracking-widest">PROJECTS</a>
-        <a href="blog/blog.html" onclick="toggleMobileMenu()" class="text-2xl font-serif text-white tracking-widest">BLOG</a>
-        
-        <a href="blog/photos.html" onclick="toggleMobileMenu()" class="text-sm font-mono text-dim tracking-widest border-b border-white/20 pb-1">// VISUAL LOGS</a>
+        <a href="#projects" onclick="toggleMobileMenu()"
+            class="text-2xl font-serif text-white tracking-widest">PROJECTS</a>
+        <a href="blog/blog.html" onclick="toggleMobileMenu()"
+            class="text-2xl font-serif text-white tracking-widest">BLOG</a>
+
+        <a href="blog/photos.html" onclick="toggleMobileMenu()"
+            class="text-sm font-mono text-dim tracking-widest border-b border-white/20 pb-1">// VISUAL LOGS</a>
 
         <div class="w-12 h-[1px] bg-white/20 my-4"></div>
 
-        <button onclick="toggleWalletModal(true); toggleMobileMenu();" class="border border-accent-blue px-8 py-3 text-accent-blue font-mono text-sm tracking-widest flex items-center gap-2">
+        <button onclick="toggleWalletModal(true); toggleMobileMenu();"
+            class="border border-accent-blue px-8 py-3 text-accent-blue font-mono text-sm tracking-widest flex items-center gap-2">
             <i class="ri-wallet-3-line"></i> CONNECT WALLET
         </button>
 
