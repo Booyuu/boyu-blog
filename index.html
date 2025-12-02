@@ -181,7 +181,7 @@
         /* 3. 巨型标题 (修复版：响应式调整) */
         .mega-title {
             /* 保持大尺寸，作为默认值或桌面值 */
-            font-size: 15vw; 
+            font-size: 15vw;
             line-height: 0.8;
             font-weight: 900;
             font-family: 'Cinzel', serif;
@@ -198,9 +198,9 @@
         @media (max-width: 768px) {
             .mega-title {
                 /* 在手机屏幕上把字号缩小到 12vw，确保文字不会溢出 */
-                font-size: 12vw !important; 
+                font-size: 12vw !important;
                 /* 确保单行显示，防止换行后溢出 */
-                white-space: nowrap; 
+                white-space: nowrap;
                 overflow: hidden;
             }
         }
@@ -1059,84 +1059,35 @@
 
     <div id="walletModal" class="fixed inset-0 z-[100] hidden opacity-0 transition-opacity duration-300">
 
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="toggleWalletModal(false)"></div>
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeModal()"></div>
 
         <div
             class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-1 pointer-events-none">
-            <div class="bg-black/90 border border-accent-blue/30 shadow-[0_0_50px_rgba(0,243,255,0.15)] relative pointer-events-auto transform transition-all duration-300 scale-95"
+
+            <div class="bg-black/90 border border-accent-blue/30 shadow-[0_0_50px_rgba(0,243,255,0.15)] rounded-xl overflow-hidden relative transform transition-all duration-300 scale-95 pointer-events-auto"
                 id="modalContent">
 
                 <div class="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-accent-blue"></div>
                 <div class="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-accent-blue"></div>
 
-                <div class="flex justify-between items-center p-6 border-b border-white/10">
-                    <h3 class="font-serif text-2xl text-white tracking-wider">CONNECT WALLET</h3>
-                    <button onclick="toggleWalletModal(false)" class="text-dim hover:text-tech-red transition-colors">
+                <div class="flex justify-between items-center p-6 border-b border-white/10 bg-white/5">
+                    <div class="flex items-center gap-3">
+                        <button id="modalBackBtn" onclick="renderMainView()"
+                            class="hidden text-dim hover:text-white transition-colors">
+                            <i class="ri-arrow-left-line text-xl"></i>
+                        </button>
+                        <h3 id="modalTitle" class="font-serif text-2xl text-white tracking-wider">CONNECT WALLET</h3>
+                    </div>
+                    <button onclick="closeModal()" class="text-dim hover:text-tech-red transition-colors">
                         <i class="ri-close-line text-2xl"></i>
                     </button>
                 </div>
 
-                <div id="walletGrid" class="p-6 grid grid-cols-2 gap-4">
-
-                    <button onclick="connectWallet('okx')"
-                        class="group flex flex-col items-center justify-center gap-3 p-4 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-accent-blue transition-all duration-300 cursor-pointer">
-                        <div
-                            class="w-12 h-12 rounded-xl bg-black border border-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <img src="https://play-lh.googleusercontent.com/N00SbjLJJrhg4hbdnkk3Llk2oedNNgCU29DvR9cpep7Lr0VkzvBkmLqajWNgFb0d7IOO"
-                                class="w-8 h-8 object-cover">
-                        </div>
-                        <div class="text-center">
-                            <div class="font-mono text-sm text-white group-hover:text-accent-blue font-bold">OKX Wallet
-                            </div>
-                            <div class="text-[10px] text-accent-blue/80 mt-1 tracking-wider">Recommended</div>
-                        </div>
-                    </button>
-
-                    <button onclick="connectWallet('metamask')"
-                        class="group flex flex-col items-center justify-center gap-3 p-4 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-[#E17726] transition-all duration-300 cursor-pointer">
-                        <div
-                            class="w-12 h-12 rounded-xl bg-white flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3ymr3UNKopfI0NmUY95Dr-0589vG-91KuAA&s"
-                                class="w-8 h-8 object-contain">
-                        </div>
-                        <div class="text-center">
-                            <div class="font-mono text-sm text-white group-hover:text-[#E17726]">MetaMask</div>
-                            <div class="text-[10px] text-dim mt-1">Popular</div>
-                        </div>
-                    </button>
-
-                    <button onclick="connectWallet('wc')"
-                        class="group flex flex-col items-center justify-center gap-3 p-4 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-[#3396FF] transition-all duration-300 cursor-pointer">
-                        <div
-                            class="w-12 h-12 rounded-xl bg-[#3396FF]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <i class="ri-qr-code-line text-2xl text-[#3396FF]"></i>
-                        </div>
-                        <div class="text-center">
-                            <div class="font-mono text-sm text-white group-hover:text-[#3396FF]">WalletConnect</div>
-                            <div class="text-[10px] text-dim mt-1">Scan QR Code</div>
-                        </div>
-                    </button>
-
-                    <button onclick="connectWallet('all')"
-                        class="group flex flex-col items-center justify-center gap-3 p-4 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white transition-all duration-300 cursor-pointer">
-                        <div
-                            class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <i class="ri-apps-line text-2xl text-white"></i>
-                        </div>
-                        <div class="text-center">
-                            <div class="font-mono text-sm text-white">All Wallets</div>
-                            <div class="text-[10px] text-dim mt-1">View More</div>
-                        </div>
-                    </button>
+                <div id="dynamicWalletContent"
+                    class="min-h-[320px] max-h-[500px] overflow-y-auto custom-scrollbar relative">
                 </div>
 
-                <button id="cancelSwitchBtn" onclick="cancelSwitch()"
-                    class="hidden w-full py-3 border-t border-white/10 text-dim hover:text-white transition-colors font-mono text-[10px] tracking-widest uppercase bg-black/50 cursor-pointer">
-                    <i class="ri-arrow-go-back-line mr-1"></i> Cancel / Back to Account
-                </button>
-
                 <div id="connectedView" class="hidden p-6 flex flex-col items-center justify-center gap-5 text-center">
-
                     <div class="relative">
                         <div
                             class="w-16 h-16 rounded-full border border-accent-blue bg-accent-blue/10 flex items-center justify-center shadow-[0_0_20px_rgba(0,243,255,0.2)]">
@@ -1144,98 +1095,78 @@
                         </div>
                         <div
                             class="absolute -bottom-1 -right-1 bg-black border border-white/20 text-[9px] text-white px-1.5 py-0.5 rounded font-mono">
-                            PILOT
-                        </div>
+                            PILOT</div>
                     </div>
-
                     <div class="space-y-2 w-full flex flex-col items-center">
                         <h4 class="font-serif text-lg text-white">ACCOUNT ACTIVE</h4>
-
                         <div id="networkBadge"
                             class="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
                             <span id="networkDot" class="w-1.5 h-1.5 rounded-full bg-gray-500 animate-pulse"></span>
                             <span id="networkName"
                                 class="font-mono text-[9px] text-dim tracking-wider uppercase">DETECTING...</span>
                         </div>
-
                         <div
                             class="font-mono text-[10px] text-gray-400 bg-white/5 px-3 py-1 rounded border border-white/10 select-all">
                             <span id="fullAddressDisplay">0x...</span>
                         </div>
                     </div>
-
                     <div class="w-full bg-white/5 border border-white/10 p-4 rounded-lg mt-1 relative overflow-hidden">
                         <div
                             class="absolute -top-10 -right-10 w-20 h-20 bg-accent-blue/20 blur-3xl rounded-full pointer-events-none">
                         </div>
-
                         <div class="flex justify-between items-end mb-3 relative z-10">
                             <span class="text-[10px] text-dim font-mono tracking-widest">AIRDROP STATUS</span>
-                            <span class="font-mono text-xl text-accent-blue font-bold text-shadow">100 $Horizon</span>
+                            <span class="font-mono text-xl text-accent-blue font-bold text-shadow">100 $HZN</span>
                         </div>
-
                         <div class="flex gap-2 relative z-10">
                             <button id="claimBtn" onclick="claimTokens()"
-                                class="flex-1 py-2 bg-accent-blue text-black font-bold font-mono text-xs hover:bg-white transition-all shadow-[0_0_15px_rgba(0,243,255,0.3)] cursor-pointer">
-                                MINT TO WALLET
-                            </button>
+                                class="flex-1 py-2 bg-accent-blue text-black font-bold font-mono text-xs hover:bg-white transition-all shadow-[0_0_15px_rgba(0,243,255,0.3)] cursor-pointer">MINT
+                                TO WALLET</button>
                             <button onclick="addTokenToWallet()"
                                 class="px-3 py-2 border border-white/20 text-white hover:bg-white/10 transition-all cursor-pointer"
-                                title="Add to MetaMask">
-                                <i class="ri-add-line"></i> 🦊
-                            </button>
+                                title="Add to MetaMask"><i class="ri-add-line"></i> 🦊</button>
                         </div>
-
                         <p id="claimStatus" class="text-[9px] text-dim mt-2 h-3 relative z-10"></p>
                     </div>
-
                     <div class="grid grid-cols-2 gap-3 w-full">
                         <button onclick="switchWallet()"
-                            class="py-2 border border-white/30 text-white hover:bg-white hover:text-black transition-all font-mono text-[10px] tracking-widest uppercase cursor-pointer">
-                            <i class="ri-exchange-line mr-1"></i> SWITCH
-                        </button>
+                            class="py-2 border border-white/30 text-white hover:bg-white hover:text-black transition-all font-mono text-[10px] tracking-widest uppercase cursor-pointer"><i
+                                class="ri-exchange-line mr-1"></i> SWITCH</button>
                         <button onclick="disconnectWallet()"
-                            class="py-2 border border-tech-red/50 text-tech-red hover:bg-tech-red hover:text-white transition-all font-mono text-[10px] tracking-widest uppercase cursor-pointer">
-                            <i class="ri-shut-down-line mr-1"></i> EXIT
-                        </button>
+                            class="py-2 border border-tech-red/50 text-tech-red hover:bg-tech-red hover:text-white transition-all font-mono text-[10px] tracking-widest uppercase cursor-pointer"><i
+                                class="ri-shut-down-line mr-1"></i> EXIT</button>
                     </div>
-
-                    <p class="text-[9px] text-dim border-t border-white/10 pt-3 w-full">
-                        <i class="ri-shield-check-line align-bottom mr-1"></i>
-                        安全提示：请定期检查钱包授权状态。
-                    </p>
-
+                    <p class="text-[9px] text-dim border-t border-white/10 pt-3 w-full"><i
+                            class="ri-shield-check-line align-bottom mr-1"></i> Check wallet permissions regularly.</p>
                 </div>
 
                 <div id="disconnectWarningView"
                     class="hidden p-8 flex flex-col items-center justify-center gap-6 text-center">
-
                     <div
                         class="w-16 h-16 rounded-full border border-tech-red/50 bg-tech-red/10 flex items-center justify-center shadow-[0_0_20px_rgba(255,59,48,0.2)] animate-pulse">
                         <i class="ri-alert-line text-3xl text-tech-red"></i>
                     </div>
-
                     <div class="space-y-2">
                         <h4 class="font-serif text-xl text-white">DISCONNECTING</h4>
                         <p class="text-dim text-xs leading-relaxed max-w-[240px] mx-auto">
                             Front-end session will be terminated.<br>
-                            <span class="text-tech-red">Please manually revoke permissions in your wallet extension for
-                                full security.</span>
+                            <span class="text-tech-red">Please manually revoke permissions in your wallet
+                                extension.</span>
                         </p>
                     </div>
-
                     <button onclick="confirmDisconnect()"
                         class="w-full py-3 border border-white/20 text-white hover:bg-white hover:text-black hover:border-white transition-all font-mono text-xs tracking-widest uppercase cursor-pointer">
                         I UNDERSTAND / DISCONNECT
                     </button>
-
                 </div>
 
-                <div class="p-4 bg-white/5 border-t border-white/10 text-center">
-                    <p class="font-sans text-[10px] text-dim">
-                        By connecting a wallet, you agree to the <a href="#"
-                            class="text-accent-blue hover:underline">Terms of Service</a>.
-                    </p>
+                <div id="modalFooter"
+                    class="p-4 border-t border-white/10 bg-white/5 text-center cursor-pointer hover:bg-white/10 transition-colors"
+                    onclick="renderLearnView()">
+                    <span class="text-[10px] text-dim font-mono">
+                        <i class="ri-question-line align-middle mr-1"></i>
+                        New to Web3? What is a wallet?
+                    </span>
                 </div>
 
             </div>
